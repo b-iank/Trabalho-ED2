@@ -1,0 +1,38 @@
+ROC64@Deus e o Diabo na terra do sol@Idem@Rocha, Glauber@1964@Brasil@8@#########################################################################################################################
+WEL41@Cidadao Kane@Citizen Kane@Welles, Orsom@1941@Estatos Unidos@9@############################################################################################################################
+KUB64@Dr. fantatisco@Dr. Strangelove or: How I learned to stop Worrying and love the bomb@Kubrick, Stanley@1964@Estatos Unidos@9@###############################################################
+WAC99@The Matrix@The Matrix@Wachowski, Lana and Lilly@1999@Estatos Unidos@7@####################################################################################################################
+LUC77@Star Wars: Episodio IV - Uma Nova Esperanca@Star Wars@Lucas, George@1977@Estatos Unidos@9@################################################################################################
+NOL10@A Origem@Inception@Nolan, Christopher@2010@Estatos Unidos@8@##############################################################################################################################
+TAR94@Pulp Fiction - Tempo de Violencia@Pulp Fiction@Tarantino, Quentin@1994@Estatos Unidos@9@##################################################################################################
+COP72@O Poderoso Chefao@The Godfather@Coppola, Francis Ford@1972@Estatos Unidos@9@##############################################################################################################
+SPI77@Contatos Imediatos do Terceiro Grau@Close Encounters of the Third Kind@Spielberg, Steven@1977@Estatos Unidos@7@###########################################################################
+MEN99@Beleza Americana@American Beauty@Mendes, Sam@1999@Estados Unidos@8@#######################################################################################################################
+COP79@Apocalypse Now@Apocalypse Now@Coppola, Francis Ford@1979@Estados Unidos@9@################################################################################################################
+KUB68@2001: Uma Odisseia no Espaco@2001: A Space Odyssey@Kubrick, Stanley@1968@Estados Unidos@9@################################################################################################
+ZEM94@Forrest Gump - O Contador de Historias@Forrest Gump@Zemeckis, Robert@1994@Estados Unidos@8@###############################################################################################
+SPI82@E.T. - O Extraterrestre@E.T. the Extra-Terrestrial@Spielberg, Steven@1982@Estados Unidos@8@###############################################################################################
+LEA57@A Ponte do Rio Kwai@The Bridge on the River Kwai@Lean, David@1957@Reino Unido@8@##########################################################################################################
+BEN98@A Vida e Bela@La vita e bella@Benigni, Roberto@1998@Italia@9@#############################################################################################################################
+ALL77@Annie Hall@Idem@Allen, Woody@1977@Estatos Unidos@8@#######################################################################################################################################
+DEM91@O Silencio dos Inocentes@The Silence of the Lambs@Demme, Jonathan@1991@Estatos Unidos@9@##################################################################################################
+SPI93@A Lista de Schindler@Schindler's List@Spielberg, Steven@1993@Estatos Unidos@9@############################################################################################################
+NOL14@Interestelar@Interstellar@Nolan, Christopher@2014@Estatos Unidos@9@#######################################################################################################################
+KUB60@Spartacus@Spartacus@Kubrick, Stanley@1960@Estatos Unidos@8@###############################################################################################################################
+TAR92@Caes de Aluguel@Reservoir Dogs@Tarantino, Quentin@1992@Estatos Unidos@8@##################################################################################################################
+AND99@Magnolia@Magnolia@Anderson, Paul Thomas@1999@Estatos Unidos@8@############################################################################################################################
+ALT70@MASH@Idem@Altman, Robert@1970@Estatos Unidos@7@###########################################################################################################################################
+CIM78@O Franco-Atirador@The Deer Hunter@Cimino, Michael@1978@Estatos Unidos@8@##################################################################################################################
+AND07@Sangue Negro@There Will Be Blood@Anderson, Paul Thomas@2007@Estatos Unidos@8@#############################################################################################################
+SPI83@Os Cacadores da Arca Perdida@Raiders of the Lost Ark@Spielberg, Steven@1981@Estatos Unidos@8@#############################################################################################
+ARR00@O Auto da Compadecida@Idem@Arraes, Guel@2000@Brasil@9@####################################################################################################################################
+NOL08@Batman: O Cavaleiro das Trevas@The Dark Knight@Nolan, Christopher@2008@Estatos Unidos@9@##################################################################################################
+JAC03@O Senhor dos Aneis: O Retorno do Rei@The Lord of the Rings: The Return of the King@Jackson, Peter@2003@Estados Unidos@8@##################################################################
+LEO96@Tres Homens em Conflito@Il Buono, Il Brutto, Il Cattivo@Leone, Sergio@1996@Espanha@7@#####################################################################################################
+MIY01@A Viagem de Chihiro@Sen to Chihiro no kamikakushi@Miyazaki, Hayao@2001@Japao@8@###########################################################################################################
+JOO19@Parasita@Gisaengchung@Joon Ho, Bong@2019@Coreia do Sul@9@#################################################################################################################################
+PHI19@Coringa@Joker@Phillips, Todd@2019@Estados Unidos@8@#######################################################################################################################################
+TAR03@Kill Bill: Volume 1@Kill Bill: Vol. 1@Tarantino, Quentin@2003@Estados Unidos@9@###########################################################################################################
+MIY04@O Castelo Animado@Hauru no ugoku shiro@Miyazaki, Hayao@2004@Japao@5@######################################################################################################################
+DOC15@Divertidamente@Inside Out@Docter, Pete@2015@Estados Unidos@8@#############################################################################################################################
+DOC01@Monstros S.A.@Monsters, Inc.@Docter, Pete@2001@Estados Unidos@9@##########################################################################################################################
