@@ -9,7 +9,7 @@
 #include "perfumaria.h"
 
 
-int main() {
+int main() { //TESTE
     char pathFilmes[80] = "Files/movies.dat"; //Caminho do arquivo filmes
     char pathPrimary[80] = "Files/iprimary.idx"; //Caminho do arquivo de índices primário
     char pathTitle[80] = "Files/ititle.idx"; //Caminho do arquivo de índices secundário
