@@ -737,6 +737,7 @@ node * insert_into_leaf_after_splitting(node * root, node * leaf, int key, recor
 /* Inserts a new key and pointer to a node
  * into a node into which these can fit
  * without violating the B+ tree properties.
+ * (root, parent, left_index, key, right);
  */
 node * insert_into_node(node * root, node * n,
                         int left_index, int key, node * right) {
@@ -756,6 +757,7 @@ node * insert_into_node(node * root, node * n,
 /* Inserts a new key and pointer to a node
  * into a node, causing the node's size to exceed
  * the order, and causing the node to split into two.
+ * (root, parent, left_index, key, right)
  */
 node * insert_into_node_after_splitting(node * root, node * old_node, int left_index,
                                         int key, node * right) {
@@ -811,6 +813,7 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
         old_node->num_keys++;
     }
     old_node->pointers[i] = temp_pointers[i];
+
     k_prime = temp_keys[split - 1];
     for (++i, j = 0; i < order; i++, j++) {
         new_node->pointers[j] = temp_pointers[i];

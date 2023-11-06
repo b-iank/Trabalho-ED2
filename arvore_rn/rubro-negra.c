@@ -256,7 +256,7 @@ void verifica_raiz(NO **raiz, NO **verifca) {
 /**
  * Calcula recursivamente a altura da árvore
  * 
- * @param no (NO *) no raiz da arvore/subarvore
+ * @param no (NO *) no raiz da arvore_rn/subarvore
  * @return Altura da árvore
 */
 int calcula_altura(NO *no) {
@@ -274,7 +274,7 @@ int calcula_altura(NO *no) {
 /**
  * Calcula recursivamente a quantidade de nós da árvore
  * 
- * @param no (NO *) no raiz da arvore/subarvore
+ * @param no (NO *) no raiz da arvore_rn/subarvore
  * @return Número total de nós da árvore
 */
 int num_total_nos(NO *no) {
@@ -682,7 +682,7 @@ boolean insere_no(NO **raiz, char ordem[71], char chave[6], char titulo[71], int
 /**
  * Busca de forma recursiva um nó em específico, usando as propriedades da árvore binária de busca.
  * 
- * @param raiz (NO *) raiz da arvore/subarvore
+ * @param raiz (NO *) raiz da arvore_rn/subarvore
  * @param elem (int) elemento chave a ser procurado
  * @return O no encontrado ou retorna NULL c.c.
 */
@@ -699,7 +699,7 @@ NO *busca_binaria(NO *raiz, char busca[66]) {
 /**
  * Função que desaloca completamante a árvore da memória
  * 
- * @param raiz (NO *) raiz da arvore/subarvore
+ * @param raiz (NO *) raiz da arvore_rn/subarvore
  * @return NULL no final quando toda árvore tenha sido expurgada
 */
 NO *expurgar_arvore(NO *raiz, boolean lista) {
