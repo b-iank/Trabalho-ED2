@@ -182,7 +182,7 @@ int insere_split(int raiz, FILE *fp, PAGE pagina_folha, char chave[6], int rrn_r
     }
 
     strcpy(aux_chave[indice], chave);
-    aux_rrn[indice] = rrn_registro; //TODO: ver se é isso msm
+    aux_rrn[indice] = rrn_registro;
 
     if ((ORDEM - 1) % 2 == 0)
         split = (ORDEM - 1) / 2;
@@ -300,23 +300,23 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
     strcpy(aux_chave[indice_esquerdo], chave);
     aux_rrn[indice_esquerdo + 1] = direita.rrn_pagina;
 
-    if (ORDEM % 2 == 0)
-        split = ORDEM / 2;
+    if ((ORDEM - 1) % 2 == 0)
+        split = (ORDEM - 1) / 2;
     else
-        split = ORDEM / 2 + 1;
+        split = (ORDEM - 1) / 2 + 1;
 
     nova_pagina.folha = 0;
     nova_pagina.quantidade_chaves = 0;
 
     pai.quantidade_chaves = 0;
-    for (i = 0; i < split - 1; i++) {
+    for (i = 0; i < split; i++) {
         strcpy(pai.chaves[i], aux_chave[i]);
         pai.rrn[i] = aux_rrn[i];
         pai.quantidade_chaves++;
     }
     pai.rrn[i] = aux_rrn[i];
 
-    strcpy(chave_p, aux_chave[split - 1]);
+    strcpy(chave_p, aux_chave[split]);
     for (++i, j = 0; i < ORDEM; i++, j++) {
         strcpy(nova_pagina.chaves[j], aux_chave[i]);
         nova_pagina.rrn[j] = aux_rrn[i];
