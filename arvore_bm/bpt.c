@@ -65,20 +65,21 @@
 #include <string.h>
 
 
-// Default order is 4.
+// Default é 4.
 #define DEFAULT_ORDER 4
 
-// Minimum order is necessarily 3.  We set the maximum
-// order arbitrarily.  You may change the maximum order.
+// Ordem mínima é necessariamente 3. Ordem máxima pode variar.
 #define MIN_ORDER 3
 #define MAX_ORDER 20
 
-// Constant for optional command-line input with "i" command.
+// Constante para input de comando com "i"
 #define BUFFER_SIZE 256
 
-// TYPES.
+// TIPOS.
 
-/* Type representing the record
+/* Tipo representando o registro a qual uma dada chave se refere.
+ * Em um sistema real de árvore B+,
+ * Type representing the record
  * to which a given key refers.
  * In a real B+ tree system, the
  * record would hold data (in a database)
@@ -92,33 +93,21 @@ typedef struct record {
     int value;
 } record;
 
-/* Type representing a node in the B+ tree.
- * This type is general enough to serve for both
- * the leaf and the internal node.
- * The heart of the node is the array
- * of keys and the array of corresponding
- * pointers.  The relation between keys
- * and pointers differs between leaves and
- * internal nodes.  In a leaf, the index
- * of each key equals the index of its corresponding
- * pointer, with a maximum of order - 1 key-pointer
- * pairs.  The last pointer points to the
- * leaf to the right (or NULL in the case
- * of the rightmost leaf).
- * In an internal node, the first pointer
- * refers to lower nodes with keys less than
- * the smallest key in the keys array.  Then,
- * with indices i starting at 0, the pointer
- * at i + 1 points to the subtree with keys
- * greater than or equal to the key in this
- * node at index i.
- * The num_keys field is used to keep
- * track of the number of valid keys.
- * In an internal node, the number of valid
- * pointers is always num_keys + 1.
- * In a leaf, the number of valid pointers
- * to data is always num_keys.  The
- * last leaf pointer points to the next leaf.
+/* Representa um nó de uma árvore B+.
+ * Serve tanto para nós folhas e internos.
+ * Tem um vetor de chaves e um vetor de ponteiros correspondentes (este último com tamanho = número de chaves + 1)
+ *
+ * Num nó folha, esse vetor de ponteiros aponta para suas informações no arquivo (máximo de pares = ordem-1).
+ * O último ponteiro aponta para o próximo nó folha. ->
+ *
+ * Num nó interno, o índice i no vetor de chaves possui a sub-árvore de nós menores que ele no índice i, e a de nós maiores no índice i + 1
+ *
+ * num_keys é a quantidade de chaves válidas no nó
+ *
+ * Num nó interno, a quantidade de ponteiros válidos é num_keys + 1
+ *
+ * Num nó folha, a quantidade de ponteiros válidos é sempre num_keys.
+ * O último ponteiro aponta para a próxima folha
  */
 typedef struct node {
     void ** pointers;
@@ -126,42 +115,38 @@ typedef struct node {
     struct node * parent;
     bool is_leaf;
     int num_keys;
-    struct node * next; // Used for queue.
+    struct node * next; // Usado para fila.
 } node;
 
 
 // GLOBALS.
 
-/* The order determines the maximum and minimum
- * number of entries (keys and pointers) in any
- * node.  Every node has at most order - 1 keys and
- * at least (roughly speaking) half that number.
- * Every leaf has as many pointers to data as keys,
- * and every internal node has one more pointer
- * to a subtree than the number of keys.
- * This global variable is initialized to the
- * default value.
+/* A ordem define a quantidade máxima e mínima de entradas (chaves e ponteiros) em um nó.
+ * Cada nó tem no máximo ordem-1 chaves, e no mínimo a metade - 1
+ *
+ * Cada nó folha tem uma quantidade igual de ponteiros e chaves,
+ * enquanto nós internos tem num_keys+1 ponteiros
+ *
+ * Essa variável global é inicializada no valor padrão
  */
 int order = DEFAULT_ORDER;
 
-/* The queue is used to print the tree in
- * level order, starting from the root
- * printing each entire rank on a separate
- * line, finishing with the leaves.
+/* Essa fila é utilizada para mostrar a árvore em ordem de nível,
+ * começando com a raiz, mostrando cada nível em uma linha diferentes,
+ * terminando nas folhas
  */
 node * queue = NULL;
 
-/* The user can toggle on and off the "verbose"
- * property, which causes the pointer addresses
- * to be printed out in hexadecimal notation
- * next to their corresponding keys.
+/* O usuário pode ligar/desligar essa propriedade,
+ * que faz os endereços de ponteiro serem mostrados em notação
+ * hexadecimal próximos às chaves correspondendes.
  */
 bool verbose_output = false;
 
 
-// FUNCTION PROTOTYPES.
+// PROTÓTIPOS DE FUNÇÕES.
 
-// Output and utility.
+// Output e utilidade.
 
 void license_notice(void);
 void usage_1(void);
@@ -181,7 +166,7 @@ node * find_leaf(node * const root, int key, bool verbose);
 record * find(node * root, int key, bool verbose, node ** leaf_out);
 int cut(int length);
 
-// Insertion.
+// Inserção.
 
 record * make_record(int value);
 node * make_node(void);
@@ -200,7 +185,7 @@ node * insert_into_new_root(node * left, int key, node * right);
 node * start_new_tree(int key, record * pointer);
 node * insert(node * root, int key, int value);
 
-// Deletion.
+// Remoção.
 
 int get_neighbor_index(node * n);
 node * adjust_root(node * root);
@@ -215,11 +200,11 @@ node * delete(node * root, int key);
 
 
 
-// FUNCTION DEFINITIONS.
+// DEFINIÇÕES DE FUNÇÕES
 
-// OUTPUT AND UTILITIES
+// Output e utilidades
 
-/* Copyright and license notice to user at startup.
+/* Copyright e licença no startup.
  */
 void license_notice(void) {
     printf("bpt version %s -- Copyright (c) 2018  Amittai Aviram "
@@ -231,7 +216,7 @@ void license_notice(void) {
 }
 
 
-/* First message to the user.
+/* Primeira mensagem ao usuário
  */
 void usage_1(void) {
     printf("B+ Tree of Order %d.\n", order);
@@ -247,7 +232,7 @@ void usage_1(void) {
 }
 
 
-/* Second message to the user.
+/* Segunda mensagem ao usuário
  */
 void usage_2(void) {
     printf("Enter any of the following commands after the prompt > :\n"
@@ -270,7 +255,7 @@ void usage_2(void) {
 }
 
 
-/* Brief usage note.
+/* Nota de uso.
  */
 void usage_3(void) {
     printf("Usage: ./bpt [<order>]\n");
@@ -278,8 +263,7 @@ void usage_3(void) {
 }
 
 
-/* Helper function for printing the
- * tree out.  See print_tree.
+/* Função auxiliar para imprimir a árvore. Veja print_tree.
  */
 void enqueue(node * new_node) {
     node * c;
@@ -298,8 +282,7 @@ void enqueue(node * new_node) {
 }
 
 
-/* Helper function for printing the
- * tree out.  See print_tree.
+/* Função auxiliar para imprimir a árvore. Veja print_tree.
  */
 node * dequeue(void) {
     node * n = queue;
@@ -309,9 +292,7 @@ node * dequeue(void) {
 }
 
 
-/* Prints the bottom row of keys
- * of the tree (with their respective
- * pointers, if the verbose_output flag is set.
+/* Printa os nós folhas (com os ponteiros se verbose_output foi setado)
  */
 void print_leaves(node * const root) {
     if (root == NULL) {
@@ -341,9 +322,8 @@ void print_leaves(node * const root) {
 }
 
 
-/* Utility function to give the height
- * of the tree, which length in number of edges
- * of the path from the root to any leaf.
+/* Função de utilidade que dá a altura da árvore,
+ * o comprimento em número de arestas do caminho da raiz até qualquer folha.
  */
 int height(node * const root) {
     int h = 0;
@@ -356,8 +336,9 @@ int height(node * const root) {
 }
 
 
-/* Utility function to give the length in edges
- * of the path from any node to the root.
+/* Função utilitária que retorna o comprimento
+ * em número de arestas do caminho de um nó
+ * qualquer até a raiz da árvore.
  */
 int path_to_root(node * const root, node * child) {
     int length = 0;
@@ -370,14 +351,11 @@ int path_to_root(node * const root, node * child) {
 }
 
 
-/* Prints the B+ tree in the command
- * line in level (rank) order, with the
- * keys in each node and the '|' symbol
- * to separate nodes.
- * With the verbose_output flag set.
- * the values of the pointers corresponding
- * to the keys also appear next to their respective
- * keys, in hexadecimal notation.
+/* Imprime a árvore B+ na linha de comando em ordem de nível (rank),
+ * com as chaves em cada nó e o símbolo '|' para separar os nós.
+ * Se a flag verbose_output estiver definida, os valores dos ponteiros
+ * correspondentes às chaves também aparecem ao lado de suas respectivas chaves,
+ * em notação hexadecimal.
  */
 void print_tree(node * const root) {
 
@@ -423,8 +401,9 @@ void print_tree(node * const root) {
 }
 
 
-/* Finds the record under a given key and prints an
- * appropriate message to stdout.
+/* Encontra o registro correspondente a uma
+ * determinada chave e imprimir uma mensagem
+ * apropriada no stdout.
  */
 void find_and_print(node * const root, int key, bool verbose) {
     node * leaf = NULL;
@@ -461,10 +440,9 @@ void find_and_print_range(node * const root, int key_start, int key_end,
 }
 
 
-/* Finds keys and their pointers, if present, in the range specified
- * by key_start and key_end, inclusive.  Places these in the arrays
- * returned_keys and returned_pointers, and returns the number of
- * entries found.
+/* Responsável por encontrar as chaves e respectivos ponteiros
+ * dentro de um intervalo de chaves entre key_start e key_end, incluindo ambos os limites.
+ * Coloca-os em dois vetores returned_keys e returned_pointers, retornando o número de entradas encontradas.
  */
 int find_range(node * const root, int key_start, int key_end, bool verbose,
                int returned_keys[], void * returned_pointers[]) {
@@ -487,10 +465,11 @@ int find_range(node * const root, int key_start, int key_end, bool verbose,
 }
 
 
-/* Traces the path from the root to a leaf, searching
- * by key.  Displays information about the path
- * if the verbose flag is set.
- * Returns the leaf containing the given key.
+/* Traça o caminho da raiz até uma folha na árvore B+,
+ * buscando por uma chave específica.
+ * Se a flag verbose estiver ativada, ela exibe informações
+ * sobre o caminho percorrido. A função retorna o nó folha
+ * que contém a chave fornecida.
  */
 node * find_leaf(node * const root, int key, bool verbose) {
     if (root == NULL) {
@@ -526,8 +505,7 @@ node * find_leaf(node * const root, int key, bool verbose) {
 }
 
 
-/* Finds and returns the record to which
- * a key refers.
+/* Encontra e retorna o registro a qual a chave se refere
  */
 record * find(node * root, int key, bool verbose, node ** leaf_out) {
     if (root == NULL) {
@@ -542,10 +520,8 @@ record * find(node * root, int key, bool verbose, node ** leaf_out) {
 
     leaf = find_leaf(root, key, verbose);
 
-    /* If root != NULL, leaf must have a value, even
-     * if it does not contain the desired key.
-     * (The leaf holds the range of keys that would
-     * include the desired key.)
+    /* Se root != NULL, a folha deve ter um valor, mesmo que não seja a chave desejada.
+     * (A folha contém o intervalo de chaves que incluiriam a chave desejada se ela existisse)
      */
 
     for (i = 0; i < leaf->num_keys; i++)
@@ -559,8 +535,7 @@ record * find(node * root, int key, bool verbose, node ** leaf_out) {
         return (record *)leaf->pointers[i];
 }
 
-/* Finds the appropriate place to
- * split a node that is too big into two.
+/* Encontra o lugar apropriado para splitar o nó grande em dois
  */
 int cut(int length) {
     if (length % 2 == 0)
@@ -570,10 +545,9 @@ int cut(int length) {
 }
 
 
-// INSERTION
+// INSERÇÃO
 
-/* Creates a new record to hold the value
- * to which a key refers.
+/* Cria um registro que possui o valor a qual a chave se refere.
  */
 record * make_record(int value) {
     record * new_record = (record *)malloc(sizeof(record));
@@ -588,8 +562,8 @@ record * make_record(int value) {
 }
 
 
-/* Creates a new general node, which can be adapted
- * to serve as either a leaf or an internal node.
+/* Cria um nó geral, que pode ser adaptado para
+ * servir tanto como folha quanto como interno.
  */
 node * make_node(void) {
     node * new_node;
@@ -615,8 +589,8 @@ node * make_node(void) {
     return new_node;
 }
 
-/* Creates a new leaf by creating a node
- * and then adapting it appropriately.
+/* Cria uma nova folha, criando um nó e
+ * adaptando apropriadamente.
  */
 node * make_leaf(void) {
     node * leaf = make_node();
@@ -625,9 +599,9 @@ node * make_leaf(void) {
 }
 
 
-/* Helper function used in insert_into_parent
- * to find the index of the parent's pointer to
- * the node to the left of the key to be inserted.
+/* Função auxiliar usada em insert_into_parent,
+ * para encontrar o index do ponteiro para o nó
+ * à esquerda de onde a chave deve ser inserida.
  */
 int get_left_index(node * parent, node * left) {
 
@@ -638,9 +612,10 @@ int get_left_index(node * parent, node * left) {
     return left_index;
 }
 
-/* Inserts a new pointer to a record and its corresponding
- * key into a leaf.
- * Returns the altered leaf.
+/* Insere um novo ponteiro ao
+ * registro e sua respectiva
+ * chave numa folha.
+ * Retorna a folha alterada.
  */
 node * insert_into_leaf(node * leaf, int key, record * pointer) {
 
@@ -661,10 +636,9 @@ node * insert_into_leaf(node * leaf, int key, record * pointer) {
 }
 
 
-/* Inserts a new key and pointer
- * to a new record into a leaf so as to exceed
- * the tree's order, causing the leaf to be split
- * in half.
+/* Insere uma nova chave e um novo ponteiro para
+ * um novo registro em uma folha, excedendo a ordem
+ * da árvore B+ e causando a divisão da folha em duas partes.
  */
 node * insert_into_leaf_after_splitting(node * root, node * leaf, int key, record * pointer) {
 
@@ -734,10 +708,13 @@ node * insert_into_leaf_after_splitting(node * root, node * leaf, int key, recor
 }
 
 
-/* Inserts a new key and pointer to a node
+/* Insere uma nova chave e ponteiro em um nó
+ * dentro de um nó onde eles possam caber sem
+ * violar as propriedades da árvore B+.
+ *
+ * Inserts a new key and pointer to a node
  * into a node into which these can fit
  * without violating the B+ tree properties.
- * (root, parent, left_index, key, right);
  */
 node * insert_into_node(node * root, node * n,
                         int left_index, int key, node * right) {
@@ -754,10 +731,9 @@ node * insert_into_node(node * root, node * n,
 }
 
 
-/* Inserts a new key and pointer to a node
- * into a node, causing the node's size to exceed
- * the order, and causing the node to split into two.
- * (root, parent, left_index, key, right)
+/* Insere uma nova chave e ponteiro em um nó
+ * dentro de um nó, fazendo com que o tamanho do nó exceda
+ * a ordem, e causando a divisão do nó em dois.
  */
 node * insert_into_node_after_splitting(node * root, node * old_node, int left_index,
                                         int key, node * right) {
@@ -767,13 +743,11 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
     int * temp_keys;
     node ** temp_pointers;
 
-    /* First create a temporary set of keys and pointers
-     * to hold everything in order, including
-     * the new key and pointer, inserted in their
-     * correct places.
-     * Then create a new node and copy half of the
-     * keys and pointers to the old node and
-     * the other half to the new.
+    /* Primeiro cria um conjunto temporário de chaves e ponteiros
+     * para guardar tudo em ordem, incluindo a nova chave e novo ponteiro,
+     * inseridos em seus lugares corretamente.
+     * Cria um novo nó e copia metade das chaves e ponteiros para o
+     * nó antigo, e a outra metade para o novo.
      */
 
     temp_pointers = malloc((order + 1) * sizeof(node *));
@@ -800,9 +774,8 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
     temp_pointers[left_index + 1] = right;
     temp_keys[left_index] = key;
 
-    /* Create the new node and copy
-     * half the keys and pointers to the
-     * old and half to the new.
+    /* Cria um novo nó e copia metade das chaves
+     * e ponteiros para o antigo, e metade para o novo
      */
     split = cut(order);
     new_node = make_node();
@@ -813,7 +786,6 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
         old_node->num_keys++;
     }
     old_node->pointers[i] = temp_pointers[i];
-
     k_prime = temp_keys[split - 1];
     for (++i, j = 0; i < order; i++, j++) {
         new_node->pointers[j] = temp_pointers[i];
@@ -829,9 +801,9 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
         child->parent = new_node;
     }
 
-    /* Insert a new key into the parent of the two
-     * nodes resulting from the split, with
-     * the old node to the left and the new to the right.
+    /* Insere uma nova chave no pai dos dois
+     * nós resultantes do split, com o nó antigo
+     * para a esquerda e o novo para a direita
      */
 
     return insert_into_parent(root, old_node, k_prime, new_node);
@@ -839,7 +811,8 @@ node * insert_into_node_after_splitting(node * root, node * old_node, int left_i
 
 
 
-/* Inserts a new node (leaf or internal node) into the B+ tree.
+/* Insere
+ * Inserts a new node (leaf or internal node) into the B+ tree.
  * Returns the root of the tree after insertion.
  */
 node * insert_into_parent(node * root, node * left, int key, node * right) {
