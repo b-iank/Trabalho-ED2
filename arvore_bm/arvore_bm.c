@@ -1,5 +1,6 @@
 #include "arvore_bm.h"
 
+// MÉTODOS ÚTIL ---------------------------------------------------------------------------------------------
 
 void escreve_pagina_vazia(FILE *fp) {
     fprintf(fp, "%s", "1@"); //Escreve folha;
@@ -58,8 +59,49 @@ PAGE le_pagina(int rrn, FILE *fp) {
     return pagina; //Retorna a página lida
 }
 
-PAGE busca_folha(int raiz, FILE *fp, char chave[6]) {
+int calcula_rrn(FILE *fp) {
+    fseek(fp, 0, SEEK_END);
+    return ftell(fp) / TAM_REGISTRO;
+}
 
+void escreve_pagina(FILE *fp, PAGE pagina) {
+    fseek(fp, pagina.rrn_pagina * TAM_REGISTRO, SEEK_SET);
+
+    fprintf(fp, "%d", pagina.folha);
+    fputc('@', fp);
+
+    int i;
+    for (i = 0; i < ORDEM - 1; i++)
+        fprintf(fp, "%s#", pagina.chaves[i]);
+    putc('@', fp);
+
+    for (i = 0; i < ORDEM; i++) {
+        if (pagina.rrn[i] > 9)
+            fprintf(fp, "%d#", pagina.rrn[i]);
+        else if (pagina.rrn[i] == -1)
+            fprintf(fp, "%s", "**#");
+        else
+            fprintf(fp, "0%d#", pagina.rrn[i]);
+    }
+    putc('@', fp);
+    if (pagina.rrn_pai == -1)
+        fprintf(fp, "**@");
+    else if (pagina.rrn_pai > 9)
+        fprintf(fp, "%d@", pagina.rrn_pai);
+    else
+        fprintf(fp, "0%d@", pagina.rrn_pai);
+}
+
+PAGE busca_primeira_folha(int raiz, FILE *fp) {
+    PAGE pagina = le_pagina(raiz, fp);
+    while (!pagina.folha)
+        pagina = le_pagina(pagina.rrn[0], fp);
+
+    return pagina;
+}
+// ----------------------------------------------------------------------------------------------------------
+
+PAGE busca_folha(int raiz, FILE *fp, char chave[6]) {
     PAGE pagina = le_pagina(raiz, fp);
     int rrn = raiz, rrn_pai = -1;
 
@@ -82,7 +124,6 @@ PAGE busca_folha(int raiz, FILE *fp, char chave[6]) {
 }
 
 int busca_registro(int rrn_raiz, FILE *fp, char chave[6]) {
-
     PAGE pagina = busca_folha(rrn_raiz, fp, chave);
 
     int i;
@@ -95,7 +136,6 @@ int busca_registro(int rrn_raiz, FILE *fp, char chave[6]) {
 }
 
 int insere_chave(int raiz, FILE *fp, char chave[6], int rrn_registro) {
-
     PAGE pagina = busca_folha(raiz, fp, chave);
     int i, j;
     if (pagina.quantidade_chaves == ORDEM - 1) { //Árvore cheia -> split
@@ -187,7 +227,6 @@ int insere_split(int raiz, FILE *fp, PAGE pagina_folha, char chave[6], int rrn_r
 }
 
 int insere_pai(int raiz, FILE *fp, char chave[6], PAGE esquerda, PAGE direita) {
-
     if (esquerda.rrn_pai == -1)
         return insere_nova_raiz(fp, chave, esquerda, direita);
 
@@ -308,36 +347,20 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
     return insere_pai(raiz, fp, chave_p, pai, nova_pagina);
 }
 
-int calcula_rrn(FILE *fp) {
-    fseek(fp, 0, SEEK_END);
-    return ftell(fp) / TAM_REGISTRO;
-}
+// MÉTODOS IMPRESSÃO ----------------------------------------------------------------------------------------
+void em_ordem(int raiz, FILE *fp) {
+    PAGE pagina = busca_primeira_folha(raiz, fp);
+    int rrn_folha = pagina.rrn_pagina, rrn, i;
 
-void escreve_pagina(FILE *fp, PAGE pagina) {
-
-    fseek(fp, pagina.rrn_pagina * TAM_REGISTRO, SEEK_SET);
-
-    fprintf(fp, "%d", pagina.folha);
-    fputc('@', fp);
-
-    int i;
-    for (i = 0; i < ORDEM - 1; i++)
-        fprintf(fp, "%s#", pagina.chaves[i]);
-    putc('@', fp);
-
-    for (i = 0; i < ORDEM; i++) {
-        if (pagina.rrn[i] > 9)
-            fprintf(fp, "%d#", pagina.rrn[i]);
-        else if (pagina.rrn[i] == -1)
-            fprintf(fp, "%s", "**#");
-        else
-            fprintf(fp, "0%d#", pagina.rrn[i]);
+    while (rrn_folha != -1) {
+        i = 0;
+        pagina = le_pagina(rrn_folha, fp);
+        rrn = pagina.rrn[0];
+        while (rrn != -1 && i < ORDEM - 1) {
+            printf(" %d ", rrn);
+            rrn = pagina.rrn[++i];
+        }
+        rrn_folha = pagina.rrn[ORDEM - 1];
     }
-    putc('@', fp);
-    if (pagina.rrn_pai == -1)
-        fprintf(fp, "**@");
-    else if (pagina.rrn_pai > 9)
-        fprintf(fp, "%d@", pagina.rrn_pai);
-    else
-        fprintf(fp, "0%d@", pagina.rrn_pai);
 }
+// ----------------------------------------------------------------------------------------------------------
