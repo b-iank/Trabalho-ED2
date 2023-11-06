@@ -1,4 +1,4 @@
-#include "arvore_bp.h"
+#include "arvore_bm.h"
 
 
 void escreve_pagina_vazia(FILE *fp) {

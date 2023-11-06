@@ -1,4 +1,4 @@
-#include "arvore/rubro-negra.h"
+#include "arvore_rn/rubro-negra.h"
 #include "perfumaria.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-#include "arvoreB/arvore_bp.h"
+#include "arvore_bm/arvore_bm.h"
 #include <stdio.h>
 
 int main () {

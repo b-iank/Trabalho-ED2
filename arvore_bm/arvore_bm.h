@@ -12,6 +12,7 @@ typedef struct pagina PAGE;
 
 struct pagina {
     int rrn_pagina;
+    int rrn_pai;
     int folha; // 1 = folha -- 0 = interno
     int quantidade_chaves;
     char chaves[ORDEM - 1][6];
