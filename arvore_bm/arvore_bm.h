@@ -40,6 +40,9 @@ int insere_pagina_split(int, FILE *, PAGE, int, char[], PAGE);
 //  -----------------------------------------
 
 // REMOÇÃO ----------------------------------
+int remover(int, FILE *, char[]);
+int remove_chave(int, FILE *, PAGE, char[], int);
+PAGE remove_chave_no(FILE *, PAGE, char[], int);
 //  -----------------------------------------
 
 // IMPRESSÃO --------------------------------
