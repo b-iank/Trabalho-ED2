@@ -328,11 +328,11 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
 
     for (i = pai.quantidade_chaves; i < ORDEM - 1; i++) {
         strcpy(pai.chaves[i], "*****");
-        pai.rrn[i+1] = -1;
+        pai.rrn[i + 1] = -1;
     }
     for (i = nova_pagina.quantidade_chaves; i < ORDEM - 1; i++) {
         strcpy(nova_pagina.chaves[i], "*****");
-        nova_pagina.rrn[i+1] = -1;
+        nova_pagina.rrn[i + 1] = -1;
     }
 
 
@@ -346,6 +346,79 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
     escreve_pagina(fp, nova_pagina);
     return insere_pai(raiz, fp, chave_p, pai, nova_pagina);
 }
+
+// MÉTODOS REMOÇÃO ------------------------------------------------------------------------------------------
+PAGE remove_chave_no(FILE *fp, PAGE folha, char chave[6], int rrn) {
+    int i, quant_rrn;
+
+    i = 0;
+    while (strcmp(folha.chaves[i], chave) != 0)
+        i++;
+    i++;
+    for (i; i < folha.quantidade_chaves; i++) {
+        strcpy(folha.chaves[i - 1], folha.chaves[i]);
+    }
+    if (folha.folha)
+        quant_rrn = folha.quantidade_chaves;
+    else
+        quant_rrn = folha.quantidade_chaves + 1;
+    //
+    i = 0;
+    while (folha.rrn[i] != rrn)
+        i++;
+    for (++i; i < quant_rrn; i++)
+        folha.rrn[i - 1] = folha.rrn[i];
+
+    folha.quantidade_chaves--;
+
+    if (folha.folha) {
+        for (i = folha.quantidade_chaves; i < ORDEM - 1; i++) {
+            folha.rrn[i] = -1;
+        }
+    } else {
+        for (i = folha.quantidade_chaves + 1; i < ORDEM; i++) {
+            folha.rrn[i] = -1;
+        }
+    }
+    escreve_pagina(fp, folha);
+    return folha;
+}
+
+int ajusta_raiz(PAGE raiz, FILE *fp) {
+    PAGE nova_raiz = raiz;
+
+    if (raiz.quantidade_chaves > 0)
+        return raiz.rrn_pagina;
+
+    if (raiz.folha)
+        return -1;
+
+    nova_raiz = le_pagina(raiz.rrn[0], fp);
+    escreve_pagina(fp, nova_raiz);
+    return nova_raiz.rrn_pagina;
+}
+
+int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
+
+    folha = remove_chave_no(fp, folha, chave, rrn);
+
+    if (raiz == folha.rrn_pagina)
+        return ajusta_raiz(folha, fp);
+}
+
+int remover(int raiz, FILE *fp, char chave[6]) {
+    PAGE folha = busca_folha(raiz, fp, chave);
+    int rrn;
+
+    if ((rrn = busca_registro(raiz, fp, chave)) == -1) {
+        printf("Chave não encontrada!\n");
+        return raiz;
+    }
+
+    raiz = remove_chave(raiz, fp, folha, chave, rrn);
+    return raiz;
+}
+// ----------------------------------------------------------------------------------------------------------
 
 // MÉTODOS IMPRESSÃO ----------------------------------------------------------------------------------------
 void em_ordem(int raiz, FILE *fp) {
