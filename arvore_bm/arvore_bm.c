@@ -1,3 +1,4 @@
+#include <math.h>
 #include "arvore_bm.h"
 
 // MÉTODOS ÚTIL ---------------------------------------------------------------------------------------------
@@ -398,12 +399,83 @@ int ajusta_raiz(PAGE raiz, FILE *fp) {
     return nova_raiz.rrn_pagina;
 }
 
-int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
+int concatenar(int raiz, FILE *fp, PAGE pai, PAGE folha, PAGE irmao, int indice_irmao){
 
+}
+
+int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE folha, PAGE irmao, int indice_irmao) {
+
+}
+int calcula_quant_minima(int tamanho) {
+    if (tamanho % 2 == 0)
+        return (tamanho)/2 - 1;
+    else
+        return (int) ceil((double)tamanho/2) - 1;
+}
+int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
+    int chaves_minimas, flag = 1;
+    int irmao_esquerda, irmao_direita = 0;
+    PAGE pai, irmao_e, irmao_d;
+
+
+    irmao_e.rrn_pai = irmao_d.rrn_pai = -1;
     folha = remove_chave_no(fp, folha, chave, rrn);
 
     if (raiz == folha.rrn_pagina)
         return ajusta_raiz(folha, fp);
+
+    // Remoção de um nó não-raiz
+    chaves_minimas = folha.folha ? calcula_quant_minima(ORDEM - 1): calcula_quant_minima(ORDEM);
+
+    // Primeiro caso: não tem menos que a quantidade mínima de chaves
+    if (folha.quantidade_chaves >= chaves_minimas)
+        return raiz;
+
+    // Segundo caso: quantidade de nós fica menor que o limite.
+    // Tentar concatenação. Caso não seja possível, redistribuição.
+
+    // Achar nó para a concatenação
+    // Achar a chave pai dos nós da concatenação
+    pai = le_pagina(folha.rrn_pai, fp);
+    for (irmao_esquerda = 0; irmao_esquerda < pai.quantidade_chaves; irmao_esquerda++) {
+        if (pai.rrn[irmao_esquerda] == folha.rrn_pagina) {
+            irmao_direita = irmao_esquerda + 1;
+            irmao_esquerda--;
+            break;
+        }
+    }
+
+    if (irmao_esquerda != -1)
+        irmao_e = le_pagina(pai.rrn[irmao_esquerda], fp);
+    if (irmao_direita != pai.quantidade_chaves)
+        irmao_d = le_pagina(pai.rrn[irmao_direita], fp);
+
+    if (irmao_e.rrn_pai != -1 && irmao_d.rrn_pai != -1) {
+        // Concatena com irmao da esquerda
+        if (irmao_e.quantidade_chaves < irmao_d.quantidade_chaves && irmao_e.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
+            return concatenar(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
+        } // Concatena com irmao da direita
+        else if (irmao_d.quantidade_chaves <= irmao_e.quantidade_chaves && irmao_d.quantidade_chaves + folha.quantidade_chaves < ORDEM){
+            return concatenar(raiz, fp, pai, folha, irmao_d, irmao_direita);
+        }
+    }
+    else if (irmao_e.rrn_pai != -1) { // Concatena com irmao da esquerda
+        if (irmao_e.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
+            return concatenar(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
+        }
+        flag = 0;
+    }
+    else if (irmao_d.rrn_pai != -1){ // Concatena com irmao da direita
+        if (irmao_d.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
+            return concatenar(raiz, fp, pai, folha, irmao_d, irmao_direita);
+        }
+    }
+
+    // redistribuicao
+    if (flag)
+        return redistribuicao(raiz, fp, pai, folha, irmao_d, irmao_direita);
+    else
+        return redistribuicao(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
 }
 
 int remover(int raiz, FILE *fp, char chave[6]) {

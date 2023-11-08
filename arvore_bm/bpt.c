@@ -535,7 +535,7 @@ record * find(node * root, int key, bool verbose, node ** leaf_out) {
         return (record *)leaf->pointers[i];
 }
 
-/* Encontra o lugar apropriado para splitar o nó grande em dois
+/* Encontra o lugar apropriado para splitar o nó em dois
  */
 int cut(int length) {
     if (length % 2 == 0)
