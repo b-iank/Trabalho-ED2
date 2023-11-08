@@ -350,37 +350,38 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
 
 // MÉTODOS REMOÇÃO ------------------------------------------------------------------------------------------
 PAGE remove_chave_no(FILE *fp, PAGE folha, char chave[6], int rrn) {
-    int i, quant_rrn;
+    int i;
 
     i = 0;
     while (strcmp(folha.chaves[i], chave) != 0)
         i++;
-    i++;
-    for (i; i < folha.quantidade_chaves; i++) {
+    for (++i; i <= folha.quantidade_chaves; i++)
         strcpy(folha.chaves[i - 1], folha.chaves[i]);
-    }
-    if (folha.folha)
-        quant_rrn = folha.quantidade_chaves;
-    else
-        quant_rrn = folha.quantidade_chaves + 1;
-    //
+
     i = 0;
     while (folha.rrn[i] != rrn)
         i++;
-    for (++i; i < quant_rrn; i++)
-        folha.rrn[i - 1] = folha.rrn[i];
-
-    folha.quantidade_chaves--;
-
     if (folha.folha) {
-        for (i = folha.quantidade_chaves; i < ORDEM - 1; i++) {
+        for (++i; i < folha.quantidade_chaves; i++)
+            folha.rrn[i - 1] = folha.rrn[i];
+
+        folha.quantidade_chaves--;
+        for (i = folha.quantidade_chaves; i < ORDEM - 1; i++)
             folha.rrn[i] = -1;
-        }
     } else {
-        for (i = folha.quantidade_chaves + 1; i < ORDEM; i++) {
+        for (++i; i < folha.quantidade_chaves + 1; i++)
+            folha.rrn[i - 1] = folha.rrn[i];
+
+        folha.quantidade_chaves--;
+        for (i = folha.quantidade_chaves + 1; i < ORDEM; i++)
             folha.rrn[i] = -1;
-        }
     }
+
+    for (i = folha.quantidade_chaves; i < ORDEM - 1; i++) {
+        strcpy(folha.chaves[i], "*****");
+    }
+    if (folha.quantidade_chaves == 0)
+        folha.folha = 2;
     escreve_pagina(fp, folha);
     return folha;
 }
@@ -399,12 +400,46 @@ int ajusta_raiz(PAGE raiz, FILE *fp) {
     return nova_raiz.rrn_pagina;
 }
 
-int concatenar(int raiz, FILE *fp, PAGE pai, PAGE folha, PAGE irmao, int indice_irmao){
+int concatenar(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, char chave_p[6]){
+    int indice_insercao = irmao.quantidade_chaves, fim;
+    int i, j;
+    PAGE tmp;
 
+    if (!pagina.folha) {
+        strcpy(irmao.chaves[indice_insercao], chave_p);
+        irmao.quantidade_chaves++;
+
+        fim = pagina.quantidade_chaves;
+
+        for (i = indice_insercao + 1, j = 0; j < fim; i++, j++) {
+            strcpy(irmao.chaves[i], pagina.chaves[j]);
+            irmao.rrn[i] = pagina.rrn[j];
+            irmao.quantidade_chaves++;
+            pagina.quantidade_chaves--;
+        }
+
+        irmao.rrn[i] = pagina.rrn[j];
+
+        for (i = 0; i < irmao.quantidade_chaves + 1; i++) {
+            tmp = le_pagina(irmao.rrn[i], fp);
+            tmp.rrn_pai = irmao.rrn_pagina;
+            escreve_pagina(fp, tmp);
+        }
+    }
+    else {
+        for (i = indice_insercao, j = 0; j < pagina.quantidade_chaves; i++, j++) {
+            strcpy(irmao.chaves[i], pagina.chaves[j]);
+            irmao.rrn[i] = pagina.rrn[j];
+            irmao.quantidade_chaves++;
+        }
+        irmao.rrn[ORDEM - 1] = pagina.rrn[ORDEM - 1];
+    }
+    raiz = remove_chave(raiz, fp, pagina, chave_p, busca_registro(raiz, fp, chave_p));
+    return raiz;
 }
 
-int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE folha, PAGE irmao, int indice_irmao) {
-
+int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE folha, PAGE irmao, int indice_irmao, char chave_p[6], int indice_p) {
+    return -1;
 }
 int calcula_quant_minima(int tamanho) {
     if (tamanho % 2 == 0)
@@ -412,23 +447,24 @@ int calcula_quant_minima(int tamanho) {
     else
         return (int) ceil((double)tamanho/2) - 1;
 }
-int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
-    int chaves_minimas, flag = 1;
-    int irmao_esquerda, irmao_direita = 0;
-    PAGE pai, irmao_e, irmao_d;
 
+int remove_chave(int raiz, FILE *fp, PAGE pagina, char chave[6], int rrn) {
+    int chaves_minimas, flag = 1;
+    int irmao_esquerda, irmao_direita = 0, indice_p;
+    PAGE pai, irmao_e, irmao_d;
+    char chave_p[6];
 
     irmao_e.rrn_pai = irmao_d.rrn_pai = -1;
-    folha = remove_chave_no(fp, folha, chave, rrn);
+    pagina = remove_chave_no(fp, pagina, chave, rrn);
 
-    if (raiz == folha.rrn_pagina)
-        return ajusta_raiz(folha, fp);
+    if (raiz == pagina.rrn_pagina)
+        return ajusta_raiz(pagina, fp); // reescreve no arquivo
 
     // Remoção de um nó não-raiz
-    chaves_minimas = folha.folha ? calcula_quant_minima(ORDEM - 1): calcula_quant_minima(ORDEM);
+    chaves_minimas = pagina.folha ? calcula_quant_minima(ORDEM - 1): calcula_quant_minima(ORDEM);
 
     // Primeiro caso: não tem menos que a quantidade mínima de chaves
-    if (folha.quantidade_chaves >= chaves_minimas)
+    if (pagina.quantidade_chaves >= chaves_minimas) // reescreve no arquivo
         return raiz;
 
     // Segundo caso: quantidade de nós fica menor que o limite.
@@ -436,9 +472,9 @@ int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
 
     // Achar nó para a concatenação
     // Achar a chave pai dos nós da concatenação
-    pai = le_pagina(folha.rrn_pai, fp);
+    pai = le_pagina(pagina.rrn_pai, fp);
     for (irmao_esquerda = 0; irmao_esquerda < pai.quantidade_chaves; irmao_esquerda++) {
-        if (pai.rrn[irmao_esquerda] == folha.rrn_pagina) {
+        if (pai.rrn[irmao_esquerda] == pagina.rrn_pagina) {
             irmao_direita = irmao_esquerda + 1;
             irmao_esquerda--;
             break;
@@ -450,32 +486,41 @@ int remove_chave(int raiz, FILE *fp, PAGE folha, char chave[6], int rrn) {
     if (irmao_direita != pai.quantidade_chaves)
         irmao_d = le_pagina(pai.rrn[irmao_direita], fp);
 
+
     if (irmao_e.rrn_pai != -1 && irmao_d.rrn_pai != -1) {
-        // Concatena com irmao da esquerda
-        if (irmao_e.quantidade_chaves < irmao_d.quantidade_chaves && irmao_e.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
-            return concatenar(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
-        } // Concatena com irmao da direita
-        else if (irmao_d.quantidade_chaves <= irmao_e.quantidade_chaves && irmao_d.quantidade_chaves + folha.quantidade_chaves < ORDEM){
-            return concatenar(raiz, fp, pai, folha, irmao_d, irmao_direita);
+        if (irmao_e.quantidade_chaves < irmao_d.quantidade_chaves && irmao_e.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
+            // Concatena com irmao da esquerda
+            indice_p = irmao_esquerda;
+            strcpy(chave_p, pai.chaves[indice_p]);
+            return concatenar(raiz, fp, pai, pagina, irmao_e, chave_p);
+        } else if (irmao_d.quantidade_chaves <= irmao_e.quantidade_chaves && irmao_d.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
+            // Concatena com irmao da direita
+            indice_p = irmao_direita - 1;
+            strcpy(chave_p, pai.chaves[indice_p]);
+            return concatenar(raiz, fp, pai, pagina, irmao_d, chave_p);
         }
-    }
-    else if (irmao_e.rrn_pai != -1) { // Concatena com irmao da esquerda
-        if (irmao_e.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
-            return concatenar(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
+    } else if (irmao_e.rrn_pai != -1) {
+        if (irmao_e.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
+            // Concatena com irmao da esquerda
+            indice_p = irmao_esquerda;
+            strcpy(chave_p, pai.chaves[indice_p]);
+            return concatenar(raiz, fp, pai, pagina, irmao_e, chave_p);
         }
         flag = 0;
-    }
-    else if (irmao_d.rrn_pai != -1){ // Concatena com irmao da direita
-        if (irmao_d.quantidade_chaves + folha.quantidade_chaves < ORDEM) {
-            return concatenar(raiz, fp, pai, folha, irmao_d, irmao_direita);
+    } else if (irmao_d.rrn_pai != -1){
+        if (irmao_d.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
+            // Concatena com irmao da direita
+            indice_p = irmao_direita - 1;
+            strcpy(chave_p, pai.chaves[indice_p]);
+            return concatenar(raiz, fp, pai, pagina, irmao_d, chave_p);
         }
     }
 
     // redistribuicao
     if (flag)
-        return redistribuicao(raiz, fp, pai, folha, irmao_d, irmao_direita);
+        return redistribuicao(raiz, fp, pai, pagina, irmao_d, irmao_direita, chave_p, indice_p);
     else
-        return redistribuicao(raiz, fp, pai, folha, irmao_e, irmao_esquerda);
+        return redistribuicao(raiz, fp, pai, pagina, irmao_e, irmao_esquerda, chave_p, indice_p);
 }
 
 int remover(int raiz, FILE *fp, char chave[6]) {
