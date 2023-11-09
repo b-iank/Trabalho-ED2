@@ -29,6 +29,10 @@ int main () {
     printf("EM ORDEM:");
     em_ordem(raiz, fp);
 
+    raiz = remover(raiz, fp, "AAA11");
+    raiz = remover(raiz, fp, "BBB11");
+    raiz = remover(raiz, fp, "DDD11");
+
     fclose(fp);
 
     getchar();

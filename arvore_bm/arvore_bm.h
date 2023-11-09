@@ -23,6 +23,7 @@ PAGE le_pagina(int, FILE *);
 int calcula_rrn(FILE *fp);
 void escreve_pagina(FILE *, PAGE);
 PAGE busca_primeira_folha(int, FILE *);
+int calcula_quant_minima(int);
 // -----------------------------------------
 
 // BUSCA -----------------------------------
@@ -43,6 +44,9 @@ int insere_pagina_split(int, FILE *, PAGE, int, char[], PAGE);
 int remover(int, FILE *, char[]);
 int remove_chave(int, FILE *, PAGE, char[], int);
 PAGE remove_chave_no(FILE *, PAGE, char[], int);
+int ajusta_raiz(PAGE, FILE *);
+int redistribuicao(int, FILE *, PAGE, PAGE, PAGE, int);
+int concatenar(int, FILE *, PAGE, PAGE, PAGE, char[]);
 //  -----------------------------------------
 
 // IMPRESSÃO --------------------------------
