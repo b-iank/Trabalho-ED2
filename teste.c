@@ -22,6 +22,13 @@ int main () {
     raiz = insere_chave(raiz, fp, "III11", 9); //ok
     raiz = insere_chave(raiz, fp, "JJJ11", 10); //ok
 
+    //TODO: erro, concatenação parece funcionar porém ao propagar o erro, da problema no nó interno
+    //tanto concatenação em seguida quanto redistribuição
+    raiz = remover(raiz, fp, "HHH11");
+    raiz = remover(raiz, fp, "III11");
+    raiz = remover(raiz, fp, "JJJ11");
+
+
     printf("RAIZ: %d\n", raiz);
     int busca = busca_registro(raiz, fp, "AAA13");
     printf("BUSCA: %d\n", busca);
