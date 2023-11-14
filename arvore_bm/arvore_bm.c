@@ -417,7 +417,7 @@ int remove_chave(int raiz, FILE *fp, PAGE pagina, char chave[6], int rrn) {
         return redistribuicao(raiz, fp, pai, pagina, irmao_e, irmao_esquerda);
 
     // Concatenar
-    indice_p= irmao_d.rrn_pai != -1 ? irmao_direita -1 : irmao_esquerda;
+    indice_p = irmao_d.rrn_pai != -1 ? irmao_direita -1 : irmao_esquerda;
     strcpy(chave_p, pai.chaves[indice_p]);
     return concatenar(raiz, fp, pagina, pai, irmao_e, irmao_d, indice_p, chave_p);
 }
@@ -546,7 +546,63 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
     return raiz;
 }
 
+int concatenar(int raiz, FILE *fp, PAGE pagina, PAGE pai, PAGE irmao_e, PAGE irmao_d, int indice_p, char chave_p[6]) {
+//    Se a concatenação ocorrer na folha: a chave do nó pai não desce para o nó
+//    concatenado, pois ele não carrega dados com ele. Ele é simplesmente apagado.
+//
+//    Se a concatenação ocorrer em nó interno: usa-se a mesma lógica utilizada na
+//    árvore B
 
+    int i, j;
+
+    // Primeiro passo: concatena as chaves, irmao.rrn[-1] = pagina.rrn[-1]
+    if (irmao_e.rrn_pai != -1 && irmao_d.rrn_pai != -1) { // Ambos irmãos existem
+        if (irmao_e.quantidade_chaves < irmao_d.quantidade_chaves) { // Concatena irmão esquerdo : >página pro irmão<
+            for (i = irmao_e.quantidade_chaves, j = 0; i < pagina.quantidade_chaves; i++, j++) {
+                strcpy(irmao_e.chaves[i], pagina.chaves[j]);
+                irmao_e.rrn[i] = pagina.rrn[j];
+            }
+            irmao_e.rrn[ORDEM-1] = pagina.rrn[ORDEM-1];
+            escreve_pagina(fp, irmao_e);
+            remove_chave(raiz, fp, pai, chave_p, pagina.rrn_pagina);
+        }
+        else { // Concatena irmão direito : >irmão para página<
+            for (i=pagina.quantidade_chaves, j = 0; j < irmao_d.quantidade_chaves; i++, j++) {
+                strcpy(pagina.chaves[i], irmao_d.chaves[j]);
+                pagina.rrn[i] = irmao_d.rrn[j];
+            }
+            pagina.folha = irmao_d.folha;
+            pagina.rrn[ORDEM-1] = irmao_d.rrn[ORDEM-1]; // TODO: ver se o for está certo
+            irmao_d.folha = 2;
+            escreve_pagina(fp, pagina);
+            escreve_pagina(fp, irmao_d);
+            remove_chave(raiz, fp, pai, chave_p, irmao_d.rrn_pagina);
+        }
+    }
+    else if (irmao_e.rrn_pai != -1) { // Irmão esquerdo existe, concatena
+        for (i = irmao_e.quantidade_chaves, j = 0; i < pagina.quantidade_chaves; i++, j++) {
+            strcpy(irmao_e.chaves[i], pagina.chaves[j]);
+            irmao_e.rrn[i] = pagina.rrn[j];
+        }
+        irmao_e.rrn[ORDEM-1] = pagina.rrn[ORDEM-1];
+        escreve_pagina(fp, irmao_e);
+        remove_chave(raiz, fp, pai, chave_p, pagina.rrn_pagina);
+    }
+    else { // Irmão direito existe, concatena
+        for (i=pagina.quantidade_chaves, j = 0; j < irmao_d.quantidade_chaves; i++, j++) {
+            strcpy(pagina.chaves[i], irmao_d.chaves[j]);
+            pagina.rrn[i] = irmao_d.rrn[j];
+        }
+        pagina.folha = irmao_d.folha;
+        pagina.rrn[ORDEM-1] = irmao_d.rrn[ORDEM-1]; // TODO: ver se o for está certo
+        irmao_d.folha = 2;
+        escreve_pagina(fp, pagina);
+        escreve_pagina(fp, irmao_d);
+        remove_chave(raiz, fp, pai, chave_p, irmao_d.rrn_pagina);
+    }
+
+
+}
 // ----------------------------------------------------------------------------------------------------------
 
 // MÉTODOS IMPRESSÃO ----------------------------------------------------------------------------------------
