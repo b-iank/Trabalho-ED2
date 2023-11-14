@@ -46,7 +46,7 @@ int remove_chave(int, FILE *, PAGE, char[], int);
 PAGE remove_chave_no(FILE *, PAGE, char[], int);
 int ajusta_raiz(PAGE, FILE *);
 int redistribuicao(int, FILE *, PAGE, PAGE, PAGE, int);
-int concatenar(int, FILE *, PAGE, PAGE, PAGE, char[]);
+int concatenar(int, FILE *, PAGE, PAGE, PAGE, PAGE, int, char[]);
 //  -----------------------------------------
 
 // IMPRESSÃO --------------------------------

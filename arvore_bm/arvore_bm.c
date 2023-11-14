@@ -416,35 +416,10 @@ int remove_chave(int raiz, FILE *fp, PAGE pagina, char chave[6], int rrn) {
     else if (irmao_e.rrn_pai != -1 && irmao_e.quantidade_chaves > chaves_minimas)
         return redistribuicao(raiz, fp, pai, pagina, irmao_e, irmao_esquerda);
 
-
-//    if (irmao_e.rrn_pai != -1 && irmao_d.rrn_pai != -1) {
-//        if (irmao_e.quantidade_chaves < irmao_d.quantidade_chaves && irmao_e.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
-//            // Concatena com irmao da esquerda
-//            indice_p = irmao_esquerda;
-//            strcpy(chave_p, pai.chaves[indice_p]);
-//            return concatenar(raiz, fp, pai, pagina, irmao_e, chave_p);
-//        } else if (irmao_d.quantidade_chaves <= irmao_e.quantidade_chaves && irmao_d.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
-//            // Concatena com irmao da direita
-//            indice_p = irmao_direita - 1;
-//            strcpy(chave_p, pai.chaves[indice_p]);
-//            return concatenar(raiz, fp, pai, pagina, irmao_d, chave_p);
-//        }
-//    } else if (irmao_e.rrn_pai != -1) {
-//        if (irmao_e.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
-//            // Concatena com irmao da esquerda
-//            indice_p = irmao_esquerda;
-//            strcpy(chave_p, pai.chaves[indice_p]);
-//            return concatenar(raiz, fp, pai, pagina, irmao_e, chave_p);
-//        }
-//        flag = 0;
-//    } else if (irmao_d.rrn_pai != -1){
-//        if (irmao_d.quantidade_chaves + pagina.quantidade_chaves < ORDEM) {
-//            // Concatena com irmao da direita
-//            indice_p = irmao_direita - 1;
-//            strcpy(chave_p, pai.chaves[indice_p]);
-//            return concatenar(raiz, fp, pai, pagina, irmao_d, chave_p);
-//        }
-//    }
+    // Concatenar
+    indice_p= irmao_d.rrn_pai != -1 ? irmao_direita -1 : irmao_esquerda;
+    strcpy(chave_p, pai.chaves[indice_p]);
+    return concatenar(raiz, fp, pagina, pai, irmao_e, irmao_d, indice_p, chave_p);
 }
 
 PAGE remove_chave_no(FILE *fp, PAGE folha, char chave[6], int rrn) {
@@ -571,13 +546,6 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
     return raiz;
 }
 
-int concatenar(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, char chave_p[6]) {
-    if (pagina.folha) {
-
-    }
-
-    return -1;
-}
 
 // ----------------------------------------------------------------------------------------------------------
 
