@@ -24,6 +24,7 @@ int calcula_rrn(FILE *fp);
 void escreve_pagina(FILE *, PAGE);
 PAGE busca_primeira_folha(int, FILE *);
 int calcula_quant_minima(int);
+void escreve_filho(FILE *, PAGE);
 // -----------------------------------------
 
 // BUSCA -----------------------------------
