@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <unistd.h>
 
 #define ORDEM 4
 #define TAM_REGISTRO 37
@@ -18,9 +20,11 @@ struct pagina {
 };
 
 // ÚTIL ------------------------------------
+int le_header(FILE *, FILE *);
+void escreve_header(int, FILE *, int);
 void escreve_pagina_vazia(FILE *);
 PAGE le_pagina(int, FILE *);
-int calcula_rrn(FILE *fp);
+int calcula_rrn(FILE *);
 void escreve_pagina(FILE *, PAGE);
 PAGE busca_primeira_folha(int, FILE *);
 int calcula_quant_minima(int);

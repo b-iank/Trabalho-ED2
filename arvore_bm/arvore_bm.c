@@ -1,8 +1,63 @@
-#include <math.h>
 #include "arvore_bm.h"
 
 // MÉTODOS ÚTIL ---------------------------------------------------------------------------------------------
+int le_header(FILE *arvore, FILE *filmes) {
+    int raiz, flag, count = 0;
+    char chave[6], aux[3];
+    fseek(arvore, 0, SEEK_SET);
+    fscanf(arvore, "%d", &flag);
+    flag = atoi(aux);
+    fgetc(arvore);
+    fscanf(arvore, "%[^#]s", aux);
+    raiz = atoi(aux);
+
+    if (flag == 0) {
+        fseek(arvore, 0, SEEK_SET);
+        ftruncate(fileno(arvore), 2 * TAM_REGISTRO);
+        escreve_pagina_vazia(arvore);
+        raiz = 1;
+        rewind(filmes);
+
+        while (1 == 1) {
+            fseek(filmes, count * 192, SEEK_SET);
+            if (fscanf(filmes, "%[^@]s", chave) == EOF) //Lê a chave do arquivo de filmes
+                break;
+            else if (chave[0] != '*' && chave[1] != '|')
+                raiz = insere_chave(raiz, arvore, chave, count);  //Insere na árvore B+
+            count++;
+        }
+    }
+
+    return raiz;
+}
+
+// Função para escrever a header da árvore B+
+void escreve_header(int raiz, FILE *fp, int flag) {
+    int len = 33;
+    char header[TAM_REGISTRO + 1] = {'\0'};
+    fseek(fp, 0, SEEK_SET);
+
+    fprintf(fp, "%d#", flag);
+
+    if (raiz < 9)
+        fprintf(fp, "0%d#ORDEM:", raiz);
+    else
+        fprintf(fp, "%d#ORDEM:", raiz);
+
+    if (ORDEM < 9)
+        fprintf(fp, "0%d", ORDEM);
+    else
+        fprintf(fp, "%d", ORDEM);
+
+    fprintf(fp, "#TAMANHO_REGISTRO:%d", TAM_REGISTRO);
+
+    for (int i = len; i < TAM_REGISTRO; i++)
+        strcat(header, "#");
+    fprintf(fp, "%s", header);
+}
+
 void escreve_pagina_vazia(FILE *fp) {
+    fseek(fp, TAM_REGISTRO, SEEK_SET);
     fprintf(fp, "%s", "1@"); //Escreve folha;
     int i;
     for (i = 0; i < ORDEM - 1; i++)
