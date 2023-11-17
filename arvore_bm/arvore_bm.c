@@ -39,6 +39,9 @@ void escreve_header(int raiz, FILE *fp, int flag) {
 
     fprintf(fp, "%d#", flag);
 
+    if (raiz == -1)
+        raiz = 1;
+
     if (raiz < 9)
         fprintf(fp, "0%d#ORDEM:", raiz);
     else
@@ -232,6 +235,8 @@ int busca_registro(int rrn_raiz, FILE *fp, char chave[6]) {
 // MÉTODOS INSERÇÃO -----------------------------------------------------------------------------------------
 int insere_chave(int raiz, FILE *fp, char chave[6], int rrn_registro) {
     PAGE pagina = busca_folha(raiz, fp, chave);
+    pagina.folha = 1;
+
     int i, j;
     if (pagina.quantidade_chaves == ORDEM - 1) { //Árvore cheia -> split
         raiz = insere_split(raiz, fp, pagina, chave, rrn_registro);
@@ -493,9 +498,9 @@ int remove_chave(int raiz, FILE *fp, PAGE pagina, char chave[6], int rrn) {
 
     // redistribuicao
     if (irmao_d.rrn_pai != -1 && irmao_d.quantidade_chaves > chaves_minimas)
-        return redistribuicao(raiz, fp, pai, pagina, irmao_d, irmao_direita - 1);
+        return redistribuicao(raiz, fp, pai, pagina, irmao_d, irmao_direita - 1, 1);
     else if (irmao_e.rrn_pai != -1 && irmao_e.quantidade_chaves > chaves_minimas)
-        return redistribuicao(raiz, fp, pai, pagina, irmao_e, irmao_esquerda);
+        return redistribuicao(raiz, fp, pai, pagina, irmao_e, irmao_esquerda, 0);
 
     // Concatenar
     indice_p = irmao_d.rrn_pai != -1 ? irmao_direita - 1 : irmao_esquerda;
@@ -555,28 +560,39 @@ int ajusta_raiz(PAGE raiz, FILE *fp) {
     return nova_raiz.rrn_pagina;
 }
 
-int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int indice_p) {
-    char aux_chave[2 * ORDEM][6] = {'\0'};
+int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int indice_p, int direita) {
+    char aux_chave[2 * ORDEM][6];
     int i, j, aux_rrn[2 * ORDEM], split, total, flag = 0;
 
+    for (i = 0; i < 2 * ORDEM; i++) {
+        for (j = 0; j < 5; j++)
+            aux_chave[i][j] = '*';
+        aux_chave[i][5] = '\0';
+        aux_rrn[i] = -1;
+    }
+
     // Copiando as chaves e RRNs para os vetores auxiliares.
-    if (pagina.quantidade_chaves > 0 && strcmp(pagina.chaves[0], irmao.chaves[0]) < 0) { // Pagina vem primeiro
+    if (direita == 1) { // Pagina vem primeiro
         for (i = 0; i < pagina.quantidade_chaves; i++) {
             strcpy(aux_chave[i], pagina.chaves[i]);
             aux_rrn[i] = pagina.rrn[i];
         }
-        aux_rrn[i] = pagina.rrn[i];
 
         if (irmao.folha == 0)
             strcpy(aux_chave[i], pai.chaves[indice_p]);
 
-        i++;
+        if (pagina.rrn[i] != -1) {
+            aux_rrn[i] = pagina.rrn[i];
+            i++;
+        }
+
         for (j = 0; j < irmao.quantidade_chaves; i++, j++) {
             strcpy(aux_chave[i], irmao.chaves[j]);
             aux_rrn[i] = irmao.rrn[j];
         }
+
         aux_rrn[i] = irmao.rrn[j];
-        irmao.folha = pagina.folha;
+        pagina.folha = irmao.folha;
     } else { // Irmão vem primeiro
         for (i = 0; i < irmao.quantidade_chaves; i++) {
             strcpy(aux_chave[i], irmao.chaves[i]);
@@ -599,6 +615,13 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
         i = irmao.rrn_pagina;
         irmao.rrn_pagina = pagina.rrn_pagina;
         pagina.rrn_pagina = i;
+
+        if (pagina.folha == 1) {
+            i = irmao.rrn[ORDEM - 1];
+            irmao.rrn[ORDEM - 1] = pagina.rrn[ORDEM - 1];
+            pagina.rrn[ORDEM - 1] = i;
+        }
+
     }
 
     total = flag == 0 ? pagina.quantidade_chaves + irmao.quantidade_chaves + 1 : pagina.quantidade_chaves +
@@ -627,7 +650,8 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
     for (j = 0; i < total; i++, j++) {
         strcpy(irmao.chaves[j], aux_chave[i]);
         irmao.rrn[j] = aux_rrn[i];
-        irmao.quantidade_chaves++;
+        if (irmao.chaves[j][0] != '*')
+            irmao.quantidade_chaves++;
     }
     if (!irmao.folha)
         irmao.rrn[j] = aux_rrn[i];
