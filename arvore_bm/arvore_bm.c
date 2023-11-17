@@ -430,7 +430,8 @@ int insere_pagina_split(int raiz, FILE *fp, PAGE pai, int indice_esquerdo, char 
         nova_pagina.rrn[i + 1] = -1;
     }
 
-    escreve_filho(fp, nova_pagina);
+    if (nova_pagina.folha == 0)
+        escreve_filho(fp, nova_pagina);
 
     escreve_pagina(fp, pai);
     escreve_pagina(fp, nova_pagina);
@@ -642,8 +643,11 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
     escreve_pagina(fp, pagina);
     escreve_pagina(fp, irmao);
 
-    escreve_filho(fp, pagina);
-    escreve_filho(fp, irmao);
+    if (pagina.folha == 0)
+        escreve_filho(fp, pagina);
+    if (irmao.folha == 0)
+        escreve_filho(fp, irmao);
+
     return raiz;
 }
 
@@ -651,7 +655,7 @@ int concatenar(int raiz, FILE *fp, PAGE pagina, PAGE pai, PAGE irmao_e, PAGE irm
     int i, j, flag = 0;
     // Primeiro passo: concatena as chaves, irmao.rrn[-1] = pagina.rrn[-1]
     if ((irmao_e.rrn_pai != -1 && irmao_d.rrn_pai != -1 && irmao_e.quantidade_chaves < irmao_d.quantidade_chaves)
-            || irmao_e.rrn_pai != -1) { // Concatena irmão esquerdo : >página pro irmão<
+        || irmao_e.rrn_pai != -1) { // Concatena irmão esquerdo : >página pro irmão<
         flag = 1;
     }
 
@@ -671,7 +675,9 @@ int concatenar(int raiz, FILE *fp, PAGE pagina, PAGE pai, PAGE irmao_e, PAGE irm
 
         irmao_e.rrn[ORDEM - 1] = pagina.rrn[ORDEM - 1];
         escreve_pagina(fp, irmao_e);
-        escreve_filho(fp, irmao_e);
+
+        if (irmao_e.folha == 0)
+            escreve_filho(fp, irmao_e);
 
         return remove_chave(raiz, fp, pai, chave_p, pagina.rrn_pagina);
     } else {
@@ -696,7 +702,9 @@ int concatenar(int raiz, FILE *fp, PAGE pagina, PAGE pai, PAGE irmao_e, PAGE irm
         irmao_d.folha = 2;
         escreve_pagina(fp, pagina);
         escreve_pagina(fp, irmao_d);
-        escreve_filho(fp, pagina);
+
+        if (pagina.folha == 0)
+            escreve_filho(fp, pagina);
 
         return remove_chave(raiz, fp, pai, chave_p, irmao_d.rrn_pagina);
     }
