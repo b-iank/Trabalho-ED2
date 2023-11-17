@@ -8,6 +8,7 @@
 
 /**
  * Header do arquivo "filmes.c"
+ * @author Bianca Lançoni de Oliveira Garcia
  * @author Lucas Furriel Rodrigues
  */
 
@@ -31,18 +32,18 @@ FILE * arquivoIndiceSecundario(char *);
 NO * carregarIndiceP(FILE *, FILE *);
 NO * carregarIndiceS(FILE *, FILE *);
 char * geraChavePrimaria(FILME *);
-boolean inserirFilme(FILE *, NO **, NO **);
+boolean inserirFilme(FILE *, FILE *, int *, NO **);
 boolean validaNome(char []);
 boolean validaAno(char []);
-boolean validaDuplicidade(char *, NO *);
+boolean validaDuplicidade(FILE *, char *, int);
 int calculaRRN(FILE *);
-boolean removerFilme(FILE *, NO **, NO **);
-void modificarNota(FILE *, NO *);
-void buscarChavePrimaria(FILE *, NO *, char *);
-void buscarChaveSecundaria(FILE *, NO *, NO *, char *);
-void listarFilmes(FILE *, NO *, NO *);
+boolean removerFilme(FILE *, FILE *, int *, NO **);
+void modificarNota(FILE *, FILE *, int);
+void buscarChavePrimaria(FILE *, FILE *, int, char *);
+void buscarChaveSecundaria(FILE *, FILE *, int, NO *, char *);
+void listarFilmes(FILE *, FILE *, int, NO *);
 void imprimeFilme(FILE **, int);
-boolean compactarArquivo(FILE *, NO **);
+boolean compactarArquivo(FILE *, FILE *, int *);
 void escreverIndiceP(FILE *, NO *);
 void escreverIndiceS(FILE *, NO *);
 void alteraFlag(FILE *, FILE *, int *);

@@ -29,6 +29,7 @@ void escreve_pagina(FILE *, PAGE);
 PAGE busca_primeira_folha(int, FILE *);
 int calcula_quant_minima(int);
 void escreve_filho(FILE *, PAGE);
+int conta_nos(FILE *, int);
 // -----------------------------------------
 
 // BUSCA -----------------------------------
@@ -55,5 +56,5 @@ int concatenar(int, FILE *, PAGE, PAGE, PAGE, PAGE, int, char[]);
 //  -----------------------------------------
 
 // IMPRESSÃO --------------------------------
-void em_ordem(int, FILE *);
+void em_ordem_b(int raiz, FILE *fp);
 // -----------------------------------------

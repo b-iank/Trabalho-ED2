@@ -1,11 +1,12 @@
 /**
- * Arquivo com as funÃ§Ãµes principais do programa de coleÃ§Ã£o de filmes.
+ * Arquivo com as funções principais do programa de coleção de filmes.
+ * @author Bianca Lançoni de Oliveira Garcia
  * @author Lucas Furriel Rodrigues
  */
 
 
 #include "filmes.h"
-
+#include "arvore_bm/arvore_bm.h"
 
 /*  Função responsável por ler do usuário uma dentre as 7 opções disponíveis do sitema. */
 int menu() {
@@ -173,7 +174,7 @@ char *geraChavePrimaria(FILME *filme) {
 }
 
 /*  Função responsável por inserir um novo filme no arquivo de filmes e nas árvores de índices primário e secundário. */
-boolean inserirFilme(FILE *filmes, NO **indiceP, NO **indiceS) {
+boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
     boolean erro = TRUE;
     FILME *novo = malloc(sizeof(FILME)); //Aloca memória para a estrutura FILME
     printf(ALERTA "\nPara funcionamento correto do sistema, por favor nao inclua caracteres epeciais (acentos, cedilha, etc)\n" LIMPA);
@@ -226,7 +227,7 @@ boolean inserirFilme(FILE *filmes, NO **indiceP, NO **indiceS) {
     strcpy(novo->chavePrimaria, geraChavePrimaria(novo));
 
     //Verifica se já existe um filme com a mesma chave primária no índice primário
-    if (validaDuplicidade(novo->chavePrimaria, *indiceP)) {
+    if (validaDuplicidade(fileIndiceP,novo->chavePrimaria, *indiceP)) {
         printf(ERRO NEGRITO "\nChave primaria %s ja existe na sua base de dados!" LIMPA, novo->chavePrimaria);
         return FALSE;
     }
@@ -235,7 +236,8 @@ boolean inserirFilme(FILE *filmes, NO **indiceP, NO **indiceS) {
     int rrn = calculaRRN(filmes);
 
     //Insere o novo filme nas árvores de índices primário e secundário
-    insere_no(indiceP, novo->chavePrimaria, novo->chavePrimaria, NULL, rrn);
+    *indiceP = insere_chave(*indiceP, fileIndiceP, novo->chavePrimaria, rrn);
+
     NO *busca = busca_binaria(*indiceS, novo->tituloPortugues);
     if (busca == NULL)
         insere_no(indiceS, novo->tituloPortugues, novo->chavePrimaria, novo->tituloPortugues, -1);
@@ -316,9 +318,9 @@ boolean validaAno(char ano[5]) {
 }
 
 /*  Valida a existência de um filme com a mesma chave. */
-boolean validaDuplicidade(char *chave, NO *indiceP) {
-    NO *busca = busca_binaria(indiceP, chave);
-    return busca != NULL ? TRUE : FALSE;
+boolean validaDuplicidade(FILE *fp, char *chave, int raiz) {
+    int busca = busca_registro(raiz, fp, chave);
+    return busca != -1 ? TRUE : FALSE;
 }
 
 /*  Calcula o RRN da última posição do arquivo de filmes. */
@@ -330,39 +332,40 @@ int calculaRRN(FILE *fp) {
 
 /*  Lê do usuário uma chave primária e remove do arquivo de filmes aquele com a chave correspondente.
     A remoção é feita inserindo *| no início da chave (Ex: "RIB23" -> "*|B23"). */
-boolean removerFilme(FILE *fp, NO **indiceP, NO **indiceS) {
-    NO *busca;
+boolean removerFilme(FILE *fp, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
+    int busca;
     char temp[66], chave[6];
+    NO *buscaS = NULL;
 
     printf(ITALICO "Digite a chave primaria do filme que quer remover: " LIMPA);
     scanf(" %s", chave);
     for (int i = 0; i < 6; i++)
         chave[i] = toupper(chave[i]);
-    busca = busca_binaria(*indiceP, chave);
-    if (busca == NULL) {
+
+    if ((busca = busca_registro(*indiceP, fileIndiceP, chave)) == -1) {
         printf(ERRO NEGRITO "Filme nao encontrado!\n" LIMPA);
         return FALSE;
     }
 
-    fseek(fp, busca->rrn * 192, SEEK_SET); //Posiciona o ponteiro do arquivo de filmes conforme o RRN do filme a ser removido
+    fseek(fp, busca * 192, SEEK_SET); //Posiciona o ponteiro do arquivo de filmes conforme o RRN do filme a ser removido
     fscanf(fp, "%[^@]", temp);
     fgetc(fp);
     fscanf(fp, "%[^@]", temp); //Pega a chave secundaria do filme para remover da árvore
-    fseek(fp, busca->rrn * 192, SEEK_SET); //Volta ao início do registro
+    fseek(fp, busca * 192, SEEK_SET); //Volta ao início do registro
     fprintf(fp, "%s", "*|"); //Sobreescreve a chava primária com "*|"
 
-    if (deleta_no(indiceP, busca->ordem, busca->chave, busca->titulo, busca->rrn)) { //Remove da árvore primária
-        busca = busca_binaria(*indiceS, temp);
-        if (busca != NULL) {//Remove da árvore secundária
-            if (busca->lista->prox == NULL) //Implica que há apenas um elemento
-                deleta_no(indiceS, busca->ordem, busca->chave, busca->titulo, busca->rrn);
-            else
-                remove_lista(&busca, chave);
-            printf(SUCESSO "Filme removido!\n" LIMPA);
-        } else
-            printf(ERRO NEGRITO "Erro ao deletar chave secundaria!\n" LIMPA);
-    } else
-        printf(ERRO NEGRITO "Erro ao deletar chave primaria!\n" LIMPA);
+    *indiceP = remover(*indiceP, fileIndiceP, chave);
+    buscaS = busca_binaria(*indiceS, temp);
+    if (buscaS != NULL) {//Remove da árvore secundária
+        if (buscaS->lista->prox == NULL) //Implica que há apenas um elemento
+            deleta_no(indiceS, buscaS->ordem, buscaS->chave, buscaS->titulo, buscaS->rrn);
+        else
+            remove_lista(&buscaS, chave);
+        printf(SUCESSO "Filme removido!\n" LIMPA);
+    }
+    else
+        printf(ERRO NEGRITO "Erro ao deletar chave secundaria!\n" LIMPA);
+
 
     return TRUE;
 }
@@ -370,8 +373,8 @@ boolean removerFilme(FILE *fp, NO **indiceP, NO **indiceS) {
 /*  Lê do usuário uma chave primária e edita a nota no arquivo de filmes aquele com a chave correspondente.
     A edição é feita buscando o último valor do mesmo bloco, ou seja, caminhando por 6 separadores "@" e
     sobreescrevendo aquele valor. */
-void modificarNota(FILE *fp, NO *indiceP) {
-    NO *busca;
+void modificarNota(FILE *fp, FILE *fileIndiceP, int indiceP) {
+    int busca;
     char nota, chave[6] = {'\0'}, aux[100];
     int count = 0;
 
@@ -379,13 +382,13 @@ void modificarNota(FILE *fp, NO *indiceP) {
     scanf(" %s", chave);
     for (int i = 0; i < 6; i++)
         chave[i] = toupper(chave[i]);
-    busca = busca_binaria(indiceP, chave);
-    if (busca == NULL) {
+
+    if ((busca = busca_registro(indiceP, fileIndiceP, chave)) == -1) {
         printf(ERRO NEGRITO "Filme nao encontrado!\n" LIMPA);
         return;
     }
 
-    fseek(fp, busca->rrn * 192, SEEK_SET); //Posiciona o ponteiro do arquivo de filmes conforme o RRN do filme a ser editado
+    fseek(fp, busca * 192, SEEK_SET); //Posiciona o ponteiro do arquivo de filmes conforme o RRN do filme a ser editado
 
     printf(ITALICO "\nDigite a nova nota: " LIMPA);
     scanf(" %c", &nota);
@@ -404,23 +407,21 @@ void modificarNota(FILE *fp, NO *indiceP) {
 }
 
 /*  Busca por um filme pela sua chave primária e chama função de imprimir */
-void buscarChavePrimaria(FILE *fp, NO *indiceP, char *chave) {
-    char chaveUpper[6] = {'\0'};
+void buscarChavePrimaria(FILE *fp, FILE *fileIndiceP, int indiceP, char *chave) {
+    int busca;
     for (int i = 0; i < 5; i++)
-        chaveUpper[i] = toupper(chave[i]);
+        chave[i] = toupper(chave[i]);
 
-    NO *busca = busca_binaria(indiceP, chaveUpper);
-
-    if (busca == NULL) {
+    if ((busca = busca_registro(indiceP, fileIndiceP, chave)) == -1) {
         printf(ERRO NEGRITO "Filme nao encontrado!\n" LIMPA);
         return;
     }
 
-    imprimeFilme(&fp, busca->rrn);
+    imprimeFilme(&fp, busca);
 }
 
 /*  Busca por um filme pelo seu títlo em português e chama função para buscar pela sua chave primária */
-void buscarChaveSecundaria(FILE *fp, NO *indiceP, NO *indiceS, char *titulo) {
+void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS, char *titulo) {
 
     NO *busca = busca_binaria(indiceS, titulo);
     if (busca == NULL) {
@@ -429,25 +430,25 @@ void buscarChaveSecundaria(FILE *fp, NO *indiceP, NO *indiceS, char *titulo) {
     }
     LISTA *lista = busca->lista;
     while (lista != NULL) {
-        buscarChavePrimaria(fp, indiceP, lista->chave);
+        buscarChavePrimaria(fp, fileIndiceP, indiceP, lista->chave);
         lista = lista->prox;
     }
 }
 
 /*  Lista os filmes do arquivo caminhando recursivamente pela árvore rubro-negra. A recursão funciona para caminhar em
     ordem pela árvore secundária e então caminha pela lista buscando na árvore primária para printar o filme no terminal. */
-void listarFilmes(FILE *fp, NO *indiceP, NO *indiceS) {
+void listarFilmes(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS) {
     if (indiceS == NULL)
         return;
-    listarFilmes(fp, indiceP, indiceS->esq);
+    listarFilmes(fp, fileIndiceP, indiceP, indiceS->esq);
     LISTA *lista = indiceS->lista;
-    NO *busca;
+    int busca;
     while (lista) {
-        busca = busca_binaria(indiceP, lista->chave);
-        imprimeFilme(&fp, busca->rrn);
+        busca = busca_registro(indiceP, fileIndiceP, lista->chave);
+        imprimeFilme(&fp, busca);
         lista = lista->prox;
     }
-    listarFilmes(fp, indiceP, indiceS->dir);
+    listarFilmes(fp, fileIndiceP, indiceP, indiceS->dir);
 }
 
 /*  Imprime no terminal um filme em específico */
@@ -494,7 +495,7 @@ void imprimeFilme(FILE **f, int rrn) {
 /*  Remove do arquivo de filmes aqueles deletados previamente. A função caminha pelo arquivo sobreescrevendo os registros
     de filmes que iniciam por *| contando canda filme removido. Para compactar o arquivo a função ainda aciona o método truncate.
     Por fim, a árvore de índice primário é expurgada e rescrita caminhando pelo arquivo agora compactado. */
-boolean compactarArquivo(FILE *fp, NO **indiceP) {
+boolean compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
     int count = 0, aux, deletados = 0, total = calculaRRN(fp), rrn = 0;
     boolean continua = TRUE;
     char filme[193] = "", chave[6];
@@ -528,19 +529,23 @@ boolean compactarArquivo(FILE *fp, NO **indiceP) {
 
         //Expurga a árvores de índice primário e a reescreve partindo do arquivo de filmes
         //É necessário para manter a integridade do RRN
-        expurgar_arvore(*indiceP, FALSE);
-        *indiceP = NULL;
 
-        total = calculaRRN(fp);
+        fseek(fileIndiceP, 0, SEEK_SET);
+        ftruncate(fileno(fileIndiceP), 2 * TAM_REGISTRO);
+        escreve_pagina_vazia(fileIndiceP);
+        *indiceP = 1;
         rewind(fp);
 
         count = 0;
-        while (count < total) {
+        while (TRUE) {
             fseek(fp, count * 192, SEEK_SET);
-            fscanf(fp, "%[^@]s", chave);
-            insere_no(indiceP, chave, chave, "", count);
+            if (fscanf(fp, "%[^@]s", chave) == EOF) //Lê a chave do arquivo de filmes
+                break;
+            else if (chave[0] != '*' && chave[1] != '|')
+                *indiceP = insere_chave(*indiceP, fileIndiceP, chave, count);  //Insere na árvore B+
             count++;
         }
+
         printf(SUCESSO "Arquivo compactado!\n" LIMPA);
         return TRUE;
     } else {
@@ -579,7 +584,6 @@ void alteraFlag(FILE *fileIndiceP, FILE *fileIndiceS, int *flag) {
     fputc('0', fileIndiceP);
     fputc('0', fileIndiceS);
 
-    fclose(fileIndiceP);
     fclose(fileIndiceS);
 
     *flag = 0;

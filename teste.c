@@ -18,7 +18,7 @@ int main () {
     printf("BUSCA: %d\n", busca);
 
     printf("EM ORDEM:");
-    em_ordem(raiz, fp);
+    em_ordem_b(raiz, fp);
 
 
     escreve_header(raiz, fp, 1);
