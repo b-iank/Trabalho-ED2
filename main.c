@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "filmes.h"
 #include "perfumaria.h"
-#include "arvore_bm/arvore_bm.h"
 
 int main() {
     char pathFilmes[80] = "Files/movies.dat"; // Caminho do arquivo filmes
@@ -24,6 +23,7 @@ int main() {
     // Variáveis auxiliares
     int op, flag;
     char temp[71];
+    PAGE folha;
 
     // Volta os ponteiros dos arquivos para o início
     rewind(filmes);
@@ -74,12 +74,25 @@ int main() {
                 if (indiceS == NULL)
                     printf(ERRO NEGRITO"Seu arquivo nao tem filmes!\n" LIMPA);
                 else {
-                    listarFilmes(filmes, fileIndiceP, indiceP, indiceS); // Lista todos os filmes
+                    folha = busca_primeira_folha(indiceP, fileIndiceP);
+                    listarFilmes(filmes, fileIndiceP, folha, folha.chaves[0]); // Lista todos os filmes
                     printf("---------------------------------\n");
                     printf(LARANJA ITALICO "Total de filmes: " LIMPA "%d\n", conta_nos(fileIndiceP, indiceP));
                 }
                 break;
-            case 7: // Remove do arquivo de filmes aqueles que foram deletados
+            case 7:
+                if (indiceS == NULL)
+                    printf(ERRO NEGRITO"Seu arquivo nao tem filmes!\n" LIMPA);
+                else {
+                    printf(ITALICO "\nDigite o valor da chave primaria: " LIMPA);
+                    scanf(" %6[^\n]s", temp);
+                    while (getchar() != '\n');
+                    folha = busca_folha(indiceP, fileIndiceP, temp);
+                    listarFilmes(filmes, fileIndiceP, folha, temp);
+                    printf("---------------------------------\n");
+                }
+                break;
+            case 8: // Remove do arquivo de filmes aqueles que foram deletados
                 if (compactarArquivo(filmes, fileIndiceP, &indiceP) && flag == 1)
                     alteraFlag(fileIndiceP, fileIndiceS, &flag);
                 break;

@@ -6,7 +6,6 @@
 
 
 #include "filmes.h"
-#include "arvore_bm/arvore_bm.h"
 
 /*  Função responsável por ler do usuário uma dentre as 7 opções disponíveis do sitema. */
 int menu() {
@@ -22,16 +21,17 @@ int menu() {
         printf("\t4- Buscar um filme (por ID)\n");
         printf("\t5- Buscar um filme (por nome)\n");
         printf("\t6- Listar todos os filmes\n");
-        printf("\t7- Compactar o arquivo de filmes\n");
+        printf("\t7- Listar os filmes apos uma chave (RANGE)\n");
+        printf("\t8- Compactar o arquivo de filmes\n");
         printf(ITALICO "Opcao: " LIMPA);
 
         ret = scanf("%d", &op);
 
-        if (ret != 1 || op < 0 || op > 7) {
+        if (ret != 1 || op < 0 || op > 8) {
             printf(ERRO NEGRITO "OPCAO INVALIDA!\n" LIMPA);
             while (getchar() != '\n'); //Limpa o buffer do teclado para evitar comportamentos inesperados
         }
-    } while (ret != 1 || op < 0 || op > 7);
+    } while (ret != 1 || op < 0 || op > 8);
 
     return op;
 }
@@ -437,18 +437,21 @@ void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS
 
 /*  Lista os filmes do arquivo caminhando recursivamente pela árvore rubro-negra. A recursão funciona para caminhar em
     ordem pela árvore secundária e então caminha pela lista buscando na árvore primária para printar o filme no terminal. */
-void listarFilmes(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS) {
-    if (indiceS == NULL)
-        return;
-    listarFilmes(fp, fileIndiceP, indiceP, indiceS->esq);
-    LISTA *lista = indiceS->lista;
-    int busca;
-    while (lista) {
-        busca = busca_registro(indiceP, fileIndiceP, lista->chave);
-        imprimeFilme(&fp, busca);
-        lista = lista->prox;
+void listarFilmes(FILE *filmes, FILE *fileIndiceP, PAGE folha, char chave[6]) {
+    int rrn_folha = folha.rrn_pagina, rrn, i = 0;
+
+    while (strcmp(chave, folha.chaves[i]) > 0)
+        i++;
+    while (rrn_folha != -1) {
+        rrn = folha.rrn[i];
+        while (rrn != -1 && i < ORDEM - 1) {
+            imprimeFilme(&filmes, rrn);
+            rrn = folha.rrn[++i];
+        }
+        rrn_folha = folha.rrn[ORDEM - 1];
+        folha = le_pagina(rrn_folha, fileIndiceP);
+        i = 0;
     }
-    listarFilmes(fp, fileIndiceP, indiceP, indiceS->dir);
 }
 
 /*  Imprime no terminal um filme em específico */

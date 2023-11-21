@@ -1,5 +1,5 @@
 #include "arvore_rn/rubro-negra.h"
-#include "perfumaria.h"
+#include "arvore_bm/arvore_bm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +41,7 @@ boolean removerFilme(FILE *, FILE *, int *, NO **);
 void modificarNota(FILE *, FILE *, int);
 void buscarChavePrimaria(FILE *, FILE *, int, char *);
 void buscarChaveSecundaria(FILE *, FILE *, int, NO *, char *);
-void listarFilmes(FILE *, FILE *, int, NO *);
+void listarFilmes(FILE *, FILE *, PAGE, char []);
 void imprimeFilme(FILE **, int);
 boolean compactarArquivo(FILE *, FILE *, int *);
 void escreverIndiceP(FILE *, NO *);
