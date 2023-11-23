@@ -242,11 +242,8 @@ int insere_chave(int raiz, FILE *fp, char chave[6], int rrn_registro) {
         raiz = insere_split(raiz, fp, pagina, chave, rrn_registro);
     } else {
         i = 0;
-        while (i < pagina.quantidade_chaves && i < ORDEM - 2) {
-            if (strcmp(chave, pagina.chaves[i]) < 0)
-                break;
+        while (strcmp(chave, pagina.chaves[i]) >= 0 && i < pagina.quantidade_chaves && i < ORDEM - 2)
             i++;
-        }
 
         for (j = pagina.quantidade_chaves; j > i; j--) {
             strcpy(pagina.chaves[j], pagina.chaves[j - 1]);

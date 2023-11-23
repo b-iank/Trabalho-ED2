@@ -73,49 +73,11 @@ FILE *arquivoIndiceSecundario(char *pth) {
     return fp;
 }
 
-/*  Monta a árvore rubro-negra com os arquivos de índice primário ou, quando a flag está em 0, com o arquivo de filmes. */
-NO *carregarIndiceP(FILE *filmes, FILE *indiceP) {
-    char chave[6];
-    int rrn, flag, count = 0;
-    NO *raiz = NULL;
-
-    fscanf(indiceP, "%d", &flag); //Lê a flag do arquivo de índice primário
-    fgetc(indiceP);
-
-    if (flag == 1) { //Caso a flag seja 1, carrega os dados do arquivo de índice primário para a árvore rubro-negra
-        while (!feof(indiceP)) {
-            // Lê a chave e o RRN do arquivo de índice primário
-            fscanf(indiceP, "%[^@]s", chave);
-            fgetc(indiceP);
-            fscanf(indiceP, "%d", &rrn);
-            fgetc(indiceP);
-
-            //Insere o nó na árvore rubro-negra
-            insere_no(&raiz, chave, chave, "", rrn);
-        }
-    } else { //Caso contrário, carrega os dados do arquivo de filmes para a árvore rubro-negra
-        rewind(filmes);
-        while (TRUE) {
-            fseek(filmes, count * 192, SEEK_SET);
-            if (fscanf(filmes, "%[^@]s", chave) == EOF) //Lê a chave do arquivo de filmes
-                break;
-            else if (chave[0] != '*' && chave[1] != '|') {
-                //Insere o nó na árvore rubro-negra
-                insere_no(&raiz, chave, chave, "", count);
-            }
-
-            count++;
-        }
-    }
-
-    return raiz;
-}
 
 /*  Monta a árvore rubro-negra com os arquivos de índice secundário ou, quando a flag está em 0, com o arquivo de filmes. */
-NO *carregarIndiceS(FILE *filmes, FILE *indiceS) {
-    char chave[6], titulo[71];
-    int flag, count = 0;
-    NO *raiz = NULL;
+no *carregarIndiceS(FILE *filmes, FILE *indiceS) {
+    int flag, cont = 0;
+    no *raiz = NULL, *novo, *aux;
 
     //Lê a flag do arquivo de índice secundário
     fscanf(indiceS, "%d", &flag);
@@ -123,36 +85,44 @@ NO *carregarIndiceS(FILE *filmes, FILE *indiceS) {
 
     if (flag == 1) { //Caso a flag seja 1, carrega os dados do arquivo de índice secundário para a árvore rubro-negra
         while (!feof(indiceS)) {
-            //Lê o título e a chave do arquivo de índice secundário
-            fscanf(indiceS, "%[^@]s", titulo);
+            novo = malloc(sizeof(no));
+            novo->idxSecundario.chaves = malloc(sizeof(Lista));
+            fscanf(indiceS, "%[^@]s", novo->chave);
             fgetc(indiceS);
-            fscanf(indiceS, "%[^#]s", chave);
+            fscanf(indiceS, "%[^#]s", novo->idxSecundario.chaves->chaveP);
             fgetc(indiceS);
 
-            NO *aux = busca_binaria(raiz, titulo);
-            if (aux == NULL)
-                insere_no(&raiz, titulo, chave, titulo, -1);
+            strcpy(novo->idxSecundario.nome, novo->chave);
+
+            novo->idxSecundario.chaves->prox = NULL;
+            if ((aux = buscaNo(raiz, novo->chave)) != NULL) {
+                insereLista(&aux, novo->idxSecundario.chaves->chaveP);
+            }
             else
-                insere_lista(&aux, chave);
+                raiz = inserir(raiz, novo);
         }
+        printf("\n");
     } else { //Caso contrário, carrega os dados do arquivo de filmes para a árvore rubro-negra
         rewind(filmes);
-        while (TRUE) {
-            fseek(filmes, count * 192, SEEK_SET);
-            if (fscanf(filmes, "%[^@]s", chave) == EOF) //Lê a chave e o título do arquivo de filmes
+
+        while(!feof(filmes)) {
+            novo = (no*) malloc(sizeof(no));
+            novo->idxSecundario.chaves = malloc(sizeof(Lista));
+            if (fscanf(filmes, "%[^@]s", novo->idxSecundario.chaves->chaveP) == EOF || fgetc(filmes) == EOF || fscanf(filmes, "%[^@]s", novo->chave) == EOF)
                 break;
-            else if (chave[0] != '*' && chave[1] != '|') {
-                fgetc(filmes);
-                fscanf(filmes, "%[^@]s", titulo);
 
-                NO *aux = busca_binaria(raiz, titulo);
-                if (aux == NULL)
-                    insere_no(&raiz, titulo, chave, titulo, -1);
+            strcpy(novo->idxSecundario.nome, novo->chave);
+
+            novo->idxSecundario.chaves->prox = NULL;
+            cont++;
+            fseek(filmes, 192*cont, SEEK_SET);
+            if (novo->idxSecundario.chaves->chaveP[0] != '*') {
+                if ((aux = buscaNo(raiz, novo->idxSecundario.nome)) != NULL) {
+                    insereLista(&aux, novo->idxSecundario.chaves->chaveP);
+                }
                 else
-                    insere_lista(&aux, chave);
+                    raiz = inserir(raiz, novo);
             }
-
-            count++;
         }
     }
 
@@ -174,8 +144,9 @@ char *geraChavePrimaria(FILME *filme) {
 }
 
 /*  Função responsável por inserir um novo filme no arquivo de filmes e nas árvores de índices primário e secundário. */
-boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
-    boolean erro = TRUE;
+int inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, no **indiceS) {
+    int erro = 1;
+    no *aux = NULL;
     FILME *novo = malloc(sizeof(FILME)); //Aloca memória para a estrutura FILME
     printf(ALERTA "\nPara funcionamento correto do sistema, por favor nao inclua caracteres epeciais (acentos, cedilha, etc)\n" LIMPA);
 
@@ -198,7 +169,7 @@ boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS
             printf(ERRO NEGRITO "O sobrenome precisa conter 3 caracteres\n" LIMPA);
     }
 
-    erro = TRUE;
+    erro = 1;
     while (erro) {
         printf(ITALICO "Digite o ano de lancamento: " LIMPA);
         scanf(" %4[^\n]s", novo->anoLancamento);
@@ -213,13 +184,13 @@ boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS
     while (getchar() != '\n');
 
     do {
-        erro = FALSE;
+        erro = 0;
         printf(ITALICO "Digite sua nota para o filme: " LIMPA);
         scanf(" %c", &novo->nota);
         while (getchar() != '\n');
         if (isalpha(novo->nota)) {
             printf(ERRO NEGRITO "Nota e um valor numerico\n" LIMPA);
-            erro = TRUE;
+            erro = 1;
         }
     } while (erro);
 
@@ -229,7 +200,7 @@ boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS
     //Verifica se já existe um filme com a mesma chave primária no índice primário
     if (validaDuplicidade(fileIndiceP,novo->chavePrimaria, *indiceP)) {
         printf(ERRO NEGRITO "\nChave primaria %s ja existe na sua base de dados!" LIMPA, novo->chavePrimaria);
-        return FALSE;
+        return 0;
     }
 
     //Calcula o RRN (Relative Record Number) do novo registro no arquivo de filmes
@@ -238,12 +209,21 @@ boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS
     //Insere o novo filme nas árvores de índices primário e secundário
     *indiceP = insere_chave(*indiceP, fileIndiceP, novo->chavePrimaria, rrn);
 
-    NO *busca = busca_binaria(*indiceS, novo->tituloPortugues);
-    if (busca == NULL)
-        insere_no(indiceS, novo->tituloPortugues, novo->chavePrimaria, novo->tituloPortugues, -1);
-    else
-        insere_lista(&busca, novo->chavePrimaria);
+    aux = buscaNo(*indiceS, novo->tituloPortugues);
+    if (aux != NULL)
+        insereLista(&aux, novo->chavePrimaria);
+    else {
+        aux = malloc(sizeof(no));
+        aux->idxSecundario.chaves = malloc(sizeof(Lista));
 
+        strcpy(aux->chave, (novo->tituloPortugues));
+
+        strcpy(aux->idxSecundario.nome, novo->tituloPortugues);
+        strcpy(aux->idxSecundario.chaves->chaveP, novo->chavePrimaria);
+
+        aux->idxSecundario.chaves->prox = NULL;
+        *indiceS = inserir(*indiceS, aux);
+    }
     //Escreve as informações do novo filme no final do arquivo de filmes
     int len = 7;
     fprintf(filmes, "%s@", novo->chavePrimaria);
@@ -271,56 +251,56 @@ boolean inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, NO **indiceS
     len += 1;
 
     //Preenche o espaço restante até o tamanho máximo de registro (192 bytes) com caracteres "#"
-    char aux[176] = "";
+    char temp[176] = "";
     for (int i = 192; i > len; i--)
-        strcat(aux, "#");
+        strcat(temp, "#");
 
-    fprintf(filmes, "%s", aux);
+    fprintf(filmes, "%s", temp);
 
     printf(SUCESSO "Filme inserido!\n" LIMPA);
 
     free(novo);
 
-    return TRUE;
+    return 1;
 }
 
 /*  Valida o nome do diretor digitado pelo usuário. O nome precisa conter ao menos 3 caracteres e eles não podem ser números.
     Retorna TRUE para inválido e FALSE para entrada permitida. */
-boolean validaNome(char nome[21]) {
+int validaNome(char nome[21]) {
     if (strlen(nome) < 3)
-        return TRUE;
+        return 1;
 
     for (int i = 0; i < 3; i++) {
         if (nome[i] == ' ' || isdigit(nome[i]))
-            return TRUE;
+            return 1;
     }
 
-    return FALSE;
+    return 0;
 }
 
 /*  Valida o ano digitado pelo usuário. Precisa conter 4 caracteres, e todos devem ser digitos. Retorna TRUE para
     inválido e FALSE para entrada permitida  */
-boolean validaAno(char ano[5]) {
+int validaAno(char ano[5]) {
 
     if (strlen(ano) < 4)
-        return TRUE;
+        return 1;
 
     for (int i = 0; i < 4; i++) {
         if (ano[i] == ' ' || isalpha(ano[i]))
-            return TRUE;
+            return 1;
     }
 
     int anoint = atoi(ano);
     if (anoint > 2023)
-        return TRUE;
+        return 1;
 
-    return FALSE;
+    return 0;
 }
 
 /*  Valida a existência de um filme com a mesma chave. */
-boolean validaDuplicidade(FILE *fp, char *chave, int raiz) {
+int validaDuplicidade(FILE *fp, char *chave, int raiz) {
     int busca = busca_registro(raiz, fp, chave);
-    return busca != -1 ? TRUE : FALSE;
+    return busca != -1 ? 1 : 0;
 }
 
 /*  Calcula o RRN da última posição do arquivo de filmes. */
@@ -329,13 +309,12 @@ int calculaRRN(FILE *fp) {
     return ftell(fp) / 192;
 }
 
-
 /*  Lê do usuário uma chave primária e remove do arquivo de filmes aquele com a chave correspondente.
     A remoção é feita inserindo *| no início da chave (Ex: "RIB23" -> "*|B23"). */
-boolean removerFilme(FILE *fp, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
+int removerFilme(FILE *fp, FILE *fileIndiceP, int *indiceP, no **indiceS) {
     int busca;
     char temp[66], chave[6];
-    NO *buscaS = NULL;
+    no *buscaS = NULL;
 
     printf(ITALICO "Digite a chave primaria do filme que quer remover: " LIMPA);
     scanf(" %s", chave);
@@ -344,7 +323,7 @@ boolean removerFilme(FILE *fp, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
 
     if ((busca = busca_registro(*indiceP, fileIndiceP, chave)) == -1) {
         printf(ERRO NEGRITO "Filme nao encontrado!\n" LIMPA);
-        return FALSE;
+        return 0;
     }
 
     fseek(fp, busca * 192, SEEK_SET); //Posiciona o ponteiro do arquivo de filmes conforme o RRN do filme a ser removido
@@ -355,19 +334,19 @@ boolean removerFilme(FILE *fp, FILE *fileIndiceP, int *indiceP, NO **indiceS) {
     fprintf(fp, "%s", "*|"); //Sobreescreve a chava primária com "*|"
 
     *indiceP = remover(*indiceP, fileIndiceP, chave);
-    buscaS = busca_binaria(*indiceS, temp);
+    buscaS = buscaNo(*indiceS, temp);
     if (buscaS != NULL) {//Remove da árvore secundária
-        if (buscaS->lista->prox == NULL) //Implica que há apenas um elemento
-            deleta_no(indiceS, buscaS->ordem, buscaS->chave, buscaS->titulo, buscaS->rrn);
+        if (buscaS->idxSecundario.chaves->prox != NULL)
+            removeLista(&buscaS, chave);
         else
-            remove_lista(&buscaS, chave);
+            *indiceS = remover_avl(indiceS, buscaS);
         printf(SUCESSO "Filme removido!\n" LIMPA);
     }
     else
         printf(ERRO NEGRITO "Erro ao deletar chave secundaria!\n" LIMPA);
 
 
-    return TRUE;
+    return 1;
 }
 
 /*  Lê do usuário uma chave primária e edita a nota no arquivo de filmes aquele com a chave correspondente.
@@ -421,16 +400,15 @@ void buscarChavePrimaria(FILE *fp, FILE *fileIndiceP, int indiceP, char *chave) 
 }
 
 /*  Busca por um filme pelo seu títlo em português e chama função para buscar pela sua chave primária */
-void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS, char *titulo) {
-
-    NO *busca = busca_binaria(indiceS, titulo);
+void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, no *indiceS, char *titulo) {
+    no *busca = buscaNo(indiceS, titulo);
     if (busca == NULL) {
         printf(ERRO NEGRITO "Titulo nao encontrado!\n" LIMPA);
         return;
     }
-    LISTA *lista = busca->lista;
+    Lista *lista = busca->idxSecundario.chaves;
     while (lista != NULL) {
-        buscarChavePrimaria(fp, fileIndiceP, indiceP, lista->chave);
+        buscarChavePrimaria(fp, fileIndiceP, indiceP, lista->chaveP);
         lista = lista->prox;
     }
 }
@@ -438,8 +416,12 @@ void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, NO *indiceS
 /*  Lista os filmes do arquivo caminhando recursivamente pela árvore rubro-negra. A recursão funciona para caminhar em
     ordem pela árvore secundária e então caminha pela lista buscando na árvore primária para printar o filme no terminal. */
 void listarFilmes(FILE *filmes, FILE *fileIndiceP, PAGE folha, char chave[6]) {
-    int rrn_folha = folha.rrn_pagina, rrn, i = 0;
+    int rrn_folha = folha.rrn_pagina, rrn, i;
 
+    for (i = 0; i < 5; i++)
+        chave[i] = toupper(chave[i]);
+
+    i = 0;
     while (strcmp(chave, folha.chaves[i]) > 0)
         i++;
     while (rrn_folha != -1) {
@@ -498,9 +480,9 @@ void imprimeFilme(FILE **f, int rrn) {
 /*  Remove do arquivo de filmes aqueles deletados previamente. A função caminha pelo arquivo sobreescrevendo os registros
     de filmes que iniciam por *| contando canda filme removido. Para compactar o arquivo a função ainda aciona o método truncate.
     Por fim, a árvore de índice primário é expurgada e rescrita caminhando pelo arquivo agora compactado. */
-boolean compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
+int compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
     int count = 0, aux, deletados = 0, total = calculaRRN(fp), rrn = 0;
-    boolean continua = TRUE;
+    int continua = 1;
     char filme[193] = "", chave[6];
 
     while (count < total) {
@@ -510,12 +492,12 @@ boolean compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
         if (filme[0] == '*' && filme[1] == '|') { //Verifica se é um filme deletado
             deletados++;
             aux = rrn;
-            continua = TRUE;
+            continua = 1;
             while (continua) {
                 fseek(fp, (aux + 1) * 192, SEEK_SET);
                 fscanf(fp, "%192[^\n]s", filme);
                 if (fgetc(fp) == EOF) //Verifica se chegou ao último filme
-                    continua = FALSE;
+                    continua = 0;
                 fseek(fp, aux * 192, SEEK_SET);
                 fprintf(fp, "%s", filme);
                 aux++;
@@ -540,7 +522,7 @@ boolean compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
         rewind(fp);
 
         count = 0;
-        while (TRUE) {
+        while (1) {
             fseek(fp, count * 192, SEEK_SET);
             if (fscanf(fp, "%[^@]s", chave) == EOF) //Lê a chave do arquivo de filmes
                 break;
@@ -550,30 +532,21 @@ boolean compactarArquivo(FILE *fp, FILE *fileIndiceP, int *indiceP) {
         }
 
         printf(SUCESSO "Arquivo compactado!\n" LIMPA);
-        return TRUE;
+        return 1;
     } else {
         printf(SUCESSO "Nada para compactar!\n" LIMPA);
-        return FALSE;
+        return 0;
     }
 }
 
-/*  Caminha de forma recursiva na árvore de índice primário escrevendo seus valores no arquivo de índice respectivo. */
-void escreverIndiceP(FILE *fp, NO *indiceP) {
-    if (indiceP == NULL)
-        return;
-    escreverIndiceP(fp, indiceP->esq);
-    fprintf(fp, "#%s@%d", indiceP->chave, indiceP->rrn);
-    escreverIndiceP(fp, indiceP->dir);
-}
-
 /*  Caminha de forma recursiva na árvore de índice secundário escrevendo seus valores no arquivo respectivo. */
-void escreverIndiceS(FILE *fp, NO *indiceS) {
+void escreverIndiceS(FILE *fp, no *indiceS) {
     if (indiceS == NULL)
         return;
     escreverIndiceS(fp, indiceS->esq);
-    LISTA *lista = indiceS->lista;
+    Lista *lista = indiceS->idxSecundario.chaves;
     while (lista != NULL) {
-        fprintf(fp, "#%s@%s", indiceS->titulo, lista->chave);
+        fprintf(fp, "#%s@%s", indiceS->idxSecundario.nome, lista->chaveP);
         lista = lista->prox;
     }
     escreverIndiceS(fp, indiceS->dir);

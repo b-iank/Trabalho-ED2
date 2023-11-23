@@ -18,7 +18,7 @@ int main() {
     FILE *fileIndiceS = arquivoIndiceSecundario(pathTitle); // Abre arquivo de índice secundário
 
     int indiceP = le_header(fileIndiceP, filmes); // Carrega os índices primários em árvore rubro-negra
-    NO *indiceS = carregarIndiceS(filmes, fileIndiceS); // Carrega os índices secundários em árvore rubro-negra
+    no *indiceS = carregarIndiceS(filmes, fileIndiceS); // Carrega os índices secundários em árvore rubro-negra
 
     // Variáveis auxiliares
     int op, flag;
@@ -121,6 +121,6 @@ int main() {
     fclose(fileIndiceP);
     fclose(fileIndiceS);
 
-    expurgar_arvore(indiceS, TRUE);
+    expurgar(indiceS, 1);
     return 0;
 }

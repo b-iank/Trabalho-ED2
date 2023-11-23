@@ -1,4 +1,4 @@
-#include "arvore_rn/rubro-negra.h"
+#include "arvore_avl/avl.h"
 #include "arvore_bm/arvore_bm.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,21 +29,19 @@ int menu();
 FILE * arquivoFilme(char *);
 FILE * arquivoIndicePrimario(char *);
 FILE * arquivoIndiceSecundario(char *);
-NO * carregarIndiceP(FILE *, FILE *);
-NO * carregarIndiceS(FILE *, FILE *);
+no * carregarIndiceS(FILE *, FILE *);
 char * geraChavePrimaria(FILME *);
-boolean inserirFilme(FILE *, FILE *, int *, NO **);
-boolean validaNome(char []);
-boolean validaAno(char []);
-boolean validaDuplicidade(FILE *, char *, int);
+int inserirFilme(FILE *, FILE *, int *, no **);
+int validaNome(char []);
+int validaAno(char []);
+int validaDuplicidade(FILE *, char *, int);
 int calculaRRN(FILE *);
-boolean removerFilme(FILE *, FILE *, int *, NO **);
+int removerFilme(FILE *, FILE *, int *, no **);
 void modificarNota(FILE *, FILE *, int);
 void buscarChavePrimaria(FILE *, FILE *, int, char *);
-void buscarChaveSecundaria(FILE *, FILE *, int, NO *, char *);
+void buscarChaveSecundaria(FILE *, FILE *, int, no *, char *);
 void listarFilmes(FILE *, FILE *, PAGE, char []);
 void imprimeFilme(FILE **, int);
-boolean compactarArquivo(FILE *, FILE *, int *);
-void escreverIndiceP(FILE *, NO *);
-void escreverIndiceS(FILE *, NO *);
+int compactarArquivo(FILE *, FILE *, int *);
+void escreverIndiceS(FILE *, no *);
 void alteraFlag(FILE *, FILE *, int *);
