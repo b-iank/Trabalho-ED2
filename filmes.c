@@ -416,8 +416,12 @@ void buscarChaveSecundaria(FILE *fp, FILE *fileIndiceP, int indiceP, no *indiceS
 /*  Lista os filmes do arquivo caminhando recursivamente pela árvore rubro-negra. A recursão funciona para caminhar em
     ordem pela árvore secundária e então caminha pela lista buscando na árvore primária para printar o filme no terminal. */
 void listarFilmes(FILE *filmes, FILE *fileIndiceP, PAGE folha, char chave[6]) {
-    int rrn_folha = folha.rrn_pagina, rrn, i = 0;
+    int rrn_folha = folha.rrn_pagina, rrn, i;
 
+    for (i = 0; i < 5; i++)
+        chave[i] = toupper(chave[i]);
+
+    i = 0;
     while (strcmp(chave, folha.chaves[i]) > 0)
         i++;
     while (rrn_folha != -1) {
