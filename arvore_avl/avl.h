@@ -54,4 +54,4 @@ no* remover_avl(no** raiz, no* removido);
 
 no* buscaNo(no *raiz, char* chave);
 
-no* expurgar(no* raiz, int PouS);
+no *expurgar(no *raiz);

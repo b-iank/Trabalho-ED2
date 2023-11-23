@@ -77,7 +77,7 @@ int main() {
                     folha = busca_primeira_folha(indiceP, fileIndiceP);
                     listarFilmes(filmes, fileIndiceP, folha, folha.chaves[0]); // Lista todos os filmes
                     printf("---------------------------------\n");
-                    printf(LARANJA ITALICO "Total de filmes: " LIMPA "%d\n", conta_nos(fileIndiceP, indiceP));
+                    printf(LARANJA ITALICO "Total de filmes: " LIMPA "%d\n", conta_chaves(fileIndiceP, indiceP));
                 }
                 break;
             case 7:
@@ -121,6 +121,6 @@ int main() {
     fclose(fileIndiceP);
     fclose(fileIndiceS);
 
-    expurgar(indiceS, 1);
+    expurgar(indiceS);
     return 0;
 }

@@ -215,22 +215,21 @@ no* buscaNo(no *raiz, char* chave) {
 }
 
 // Free arvore
-no* expurgar(no* raiz, int PouS) {
+no *expurgar(no *raiz) {
     if (raiz == NULL)
         return NULL;
 
     Lista *aux, *prox;
-    raiz->esq = expurgar(raiz->esq, PouS);
-    raiz->dir = expurgar(raiz->dir, PouS);
+    raiz->esq = expurgar(raiz->esq);
+    raiz->dir = expurgar(raiz->dir);
 
-    if (PouS){
-        aux = raiz->idxSecundario.chaves;
-        while (aux != NULL) {
-            prox = aux->prox;
-            free(aux);
-            aux = prox;
-        }
+    aux = raiz->idxSecundario.chaves;
+    while (aux != NULL) {
+        prox = aux->prox;
+        free(aux);
+        aux = prox;
     }
+
     free(raiz);
     return NULL;
 }
