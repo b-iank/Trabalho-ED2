@@ -568,7 +568,6 @@ PAGE remove_chave_no(FILE *fp, PAGE pagina, char chave[6], int rrn) {
     for (++i; i <= pagina.quantidade_chaves; i++)
         strcpy(pagina.chaves[i - 1], pagina.chaves[i]);
 
-    // TODO: arrumar whiles
     i = 0;
     while (pagina.rrn[i] != rrn)
         i++;
