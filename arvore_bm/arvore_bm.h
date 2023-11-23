@@ -5,8 +5,8 @@
 #include <math.h>
 #include <unistd.h>
 
-#define ORDEM 4
-#define TAM_REGISTRO 37
+#define ORDEM 8
+#define TAM_REGISTRO 73
 
 typedef struct pagina PAGE;
 
