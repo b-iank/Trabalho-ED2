@@ -55,7 +55,7 @@ Esses símbolos e números são resultados das formatações utilizadas para tor
 Para compilar e executar o programa, siga as etapas abaixo:
 
 1. Abra o terminal e navegue até o diretório do projeto.
-2. Execute o comando `gcc -o nome_do_programa main.c` para compilar o programa.
+2. Execute o comando `gcc -o nome_do_programa main.c filmes.c arvore_avl/avl.c arvore_bm/arvore_bm.c` para compilar o programa.
 3. Em seguida, execute o comando `./nome_do_programa` para executar o programa.
 
 Certifique-se de ter as dependências necessárias instaladas e de atender aos requisitos mínimos do sistema antes de executar o programa.
