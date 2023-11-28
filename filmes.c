@@ -148,6 +148,14 @@ int inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, no **indiceS) {
     int erro = 1;
     no *aux = NULL;
     FILME *novo = malloc(sizeof(FILME)); //Aloca memória para a estrutura FILME
+
+    //Calcula o RRN (Relative Record Number) do novo registro no arquivo de filmes
+    int rrn = calculaRRN(filmes);
+
+    if (rrn >= 100) {
+        printf(ALERTA "\nLimite de filmes atingido! Tente compactar o arquivo ou remover um filme." LIMPA);
+        return 0;
+    }
     printf(ALERTA "\nPara funcionamento correto do sistema, por favor nao inclua caracteres epeciais (acentos, cedilha, etc)\n" LIMPA);
 
     //Lê informações do novo filme do usuário
@@ -202,9 +210,6 @@ int inserirFilme(FILE *filmes, FILE *fileIndiceP, int *indiceP, no **indiceS) {
         printf(ERRO NEGRITO "\nChave primaria %s ja existe na sua base de dados!" LIMPA, novo->chavePrimaria);
         return 0;
     }
-
-    //Calcula o RRN (Relative Record Number) do novo registro no arquivo de filmes
-    int rrn = calculaRRN(filmes);
 
     //Insere o novo filme nas árvores de índices primário e secundário
     *indiceP = insere_chave(*indiceP, fileIndiceP, novo->chavePrimaria, rrn);
