@@ -47,15 +47,15 @@ void escreve_header(int raiz, FILE *fp, int flag) {
 
     // Escreve ao RRN da raíz no arquivo
     if (raiz < 9)
-        fprintf(fp, "0%d:", raiz);
+        fprintf(fp, "0%d", raiz);
     else
-        fprintf(fp, "%d:", raiz);
+        fprintf(fp, "%d", raiz);
 
     // Escreve o valor da ORDEM da árvore no arquivo
     if (ORDEM < 9)
-        fprintf(fp, "#ORDEM0%d", ORDEM);
+        fprintf(fp, "#ORDEM:0%d", ORDEM);
     else
-        fprintf(fp, "#ORDEM%d", ORDEM);
+        fprintf(fp, "#ORDEM:%d", ORDEM);
 
     // Escreve o valor do tamanho do registro da árvore no arquivo
     fprintf(fp, "#TAMANHO_REGISTRO:%d", TAM_REGISTRO);
@@ -212,7 +212,6 @@ int conta_chaves(FILE *fp, int raiz) {
 PAGE busca_folha(int raiz, FILE *fp, char chave[6]) {
     PAGE pagina = le_pagina(raiz, fp); // Lê a primeira página (raiz)
     int rrn = raiz, i;
-
     while (pagina.folha == 0) { // Caminha pelas páginas enquanto não chegarmos em uma folha
         i = 0;
         while (strcmp(chave, pagina.chaves[i]) >= 0 && i < pagina.quantidade_chaves) // Caminha pelos índíces

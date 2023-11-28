@@ -80,15 +80,17 @@ int main() {
                     printf(LARANJA ITALICO "Total de filmes: " LIMPA "%d\n", conta_chaves(fileIndiceP, indiceP));
                 }
                 break;
-            case 7:
+            case 7: // Listar range
                 if (indiceS == NULL)
                     printf(ERRO NEGRITO"Seu arquivo nao tem filmes!\n" LIMPA);
                 else {
                     printf(ITALICO "\nDigite o valor da chave primaria: " LIMPA);
                     scanf(" %6[^\n]s", temp);
                     while (getchar() != '\n');
+                    for (int i = 0; i < 5; i++)
+                        temp[i] = toupper(temp[i]);
                     folha = busca_folha(indiceP, fileIndiceP, temp);
-                    listarFilmes(filmes, fileIndiceP, folha, temp);
+                    listarFilmes(filmes, fileIndiceP, folha, temp); // Lista filmes partindo de uma chave
                     printf("---------------------------------\n");
                 }
                 break;
