@@ -660,9 +660,9 @@ int redistribuicao(int raiz, FILE *fp, PAGE pai, PAGE pagina, PAGE irmao, int in
         aux_rrn[i] = irmao.rrn[i];
 
         if (irmao.folha == 0) // Se não for folha, o pai participa da redistribuição
-            strcpy(aux_chave[i], pai.chaves[indice_p]);
+            strcpy(aux_chave[i++], pai.chaves[indice_p]);
 
-        i++;
+
         for (j = 0; j < pagina.quantidade_chaves; i++, j++) {
             strcpy(aux_chave[i], pagina.chaves[j]);
             aux_rrn[i] = pagina.rrn[j];

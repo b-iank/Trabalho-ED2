@@ -1,6 +1,6 @@
 # Coleção de filmes B+
 Neste projeto está um programa em linguagem C responsável por controlar o arquivo
-de filmes de um colecionador. O progrma interage com o usuário pelo terminal de execução
+de filmes de um colecionador. O programa interage com o usuário pelo terminal de execução
 para tarefas como:
 - Inserção de novo filme
 - Remoção de um filme
